@@ -94,6 +94,11 @@ To run a toy example:
 
         import pandas as ps
         data = ps.read_csv("./Returns_shares.csv")
+        data = data.values[:,2:8]
+        X = data[:,0:5]
+        y = data[:,5]
+        X0 = X.astype('float')
+        y0 = y.astype('float')
         runfile(".../robcent.py")
         runfile(".../prm.py")
         
