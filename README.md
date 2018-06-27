@@ -90,26 +90,30 @@ Ancillary functions
 Example
 -------
 To run a toy example: 
-- Source packages and data:
-                import pandas as ps
-                data = ps.read_csv("./Returns_shares.csv")
-                runfile(".../robcent.py")
-                runfile(".../prm.py")
-- Estimate and predict by SPRM
-                cols = data.columns\[2:8\]
-                res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',cols,True)
-                res_sprm.fit(X0\[:2666\],y0\[:2666\])
-                res_sprm.predict(X0\[2666:\])
-                res_sprm.transform(X0\[2666:\])
-                res_sprm.weightnewx(X0\[2666:\])
-                res_sprm.get_params()
-                res_sprm.set_params(fun="Huber")
-- Cross-validated using GridSearchCV: 
-                res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": \[1, 2, 3\], 
-                              "eta": np.arange(.1,.9,.05).tolist()})  
-                res_sprm_cv.fit(X0\[:2666\],y0\[:2666\])  
-                res_sprm_cv.best_params_
+- Source packages and data: 
+
+        import pandas as ps
+        data = ps.read_csv("./Returns_shares.csv")
+        runfile(".../robcent.py")
+        runfile(".../prm.py")
         
+- Estimate and predict by SPRM
+        
+        columnss = data.columns[2:8]
+        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',cols,True)
+        res_sprm.fit(X0[:2666],y0[:2666])
+        res_sprm.predict(X0[2666:])
+        res_sprm.transform(X0[2666:])
+        res_sprm.weightnewx(X0[2666:])
+        res_sprm.get_params()
+        res_sprm.set_params(fun="Huber")
+        
+- Cross-validated using GridSearchCV: 
+        
+        res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": \[1, 2, 3\], 
+                                   "eta": np.arange(.1,.9,.05).tolist()})  
+        res_sprm_cv.fit(X0[:2666],y0[:2666])  
+        res_sprm_cv.best_params_
         
         
 References
