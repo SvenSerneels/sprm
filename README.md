@@ -17,7 +17,8 @@ The code is aligned to ScikitLearn, such that modules such as GridSearchCV can f
 
 The main SPRM implementation yields a class with the following structure:
 
-# Dependencies: 
+Dependencies
+------------
 - From <sklearn.base>: BaseEstimator,TransformerMixin,RegressorMixin
 - From <sklearn.utils>: _BaseComposition
 - copy
@@ -25,7 +26,8 @@ The main SPRM implementation yields a class with the following structure:
 - numpy 
 - from <matplotlib>: pyplot. 
 
-# Parameters
+Parameters
+----------
 - eta: float. Sparsity parameter in \[0,1)
 - n_components: int > 1. Note that if applied on data, n_components shall take a value <= min(x_data.shape)
 - fun: str, downweighting function. 'Hampel' (recommended), 'Fair' or 'Huber'
@@ -42,7 +44,8 @@ The main SPRM implementation yields a class with the following structure:
 - colums (def false): Either boolean or list. If False, no column names supplied. If a list (will only take length x_data.shape\[1\]), the column names of the x_data supplied in this list, will be printed in verbose mode
 - copy (def True): boolean, whether to create deep copy of the data in the calculation process 
 
-# Attributes
+Attributes
+----------
 -  x_weights_: X block PLS weighting vectors (usually denoted W)
 -  x_loadings_: X block PLS loading vectors (usually denoted P)
 -  C_: vector of inner relationship between response and latent variablesblock re
@@ -65,7 +68,8 @@ The main SPRM implementation yields a class with the following structure:
 -  x_sca_: X block scale estimate
 -  y_sca_: y scale estimate
 
-# Methods 
+Methods
+--------
 - fit(X,y): fit model 
 - predict(X): make predictions based on fit 
 - transform(X): project X onto latent space 
@@ -74,7 +78,8 @@ The main SPRM implementation yields a class with the following structure:
 - setattr(\*\*kwargs): set individual attribute of sprm object 
 - valscore(X,y,scoring): option to use weighted scoring function in cross-validation if scoring=weighted 
 
-# Ancillary functions 
+Ancillary functions 
+-------------------
 - snipls (class): sparse NIPALS regression (first described in: \[2\]) 
 - Hampel: Hampel weight function 
 - Huber: Huber weight function 
@@ -84,7 +89,6 @@ The main SPRM implementation yields a class with the following structure:
 
 Example
 -------
-
 To run a toy example: 
 - Source packages and data:
                 import pandas as ps
