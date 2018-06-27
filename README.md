@@ -8,10 +8,10 @@ Description
 -----------
 
 The method performs four tasks at the same time in a single, consistent estimate: 
-- regression: yields regression coefficients and predicts responses
-- dimension reduction: calculates interpretable PLS-like components maximizing covariance to the predictand in a robust way 
-- variable selection: depending on the paramter settings, can yield highly sparse regression coefficients that contain exact zero elements 
-- outlier detection and compensation: yields a set of case weights in \[0,1\]. The lower the weight, the more outlying a case is. The estimate itself is outlier robust. 
+- *regression*: yields regression coefficients and predicts responses
+- *dimension reduction*: calculates interpretable PLS-like components maximizing covariance to the predictand in a robust way 
+- *variable selection*: depending on the paramter settings, can yield highly sparse regression coefficients that contain exact zero elements 
+- *outlier detection and compensation*: yields a set of case weights in \[0,1\]. The lower the weight, the more outlying a case is. The estimate itself is outlier robust. 
         
 The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
 
@@ -99,8 +99,8 @@ To run a toy example:
         
 - Estimate and predict by SPRM
         
-        columnss = data.columns[2:8]
-        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',cols,True)
+        columns = data.columns[2:8]
+        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
         res_sprm.fit(X0[:2666],y0[:2666])
         res_sprm.predict(X0[2666:])
         res_sprm.transform(X0[2666:])
@@ -110,7 +110,7 @@ To run a toy example:
         
 - Cross-validated using GridSearchCV: 
         
-        res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": \[1, 2, 3\], 
+        res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": [1, 2, 3], 
                                    "eta": np.arange(.1,.9,.05).tolist()})  
         res_sprm_cv.fit(X0[:2666],y0[:2666])  
         res_sprm_cv.best_params_
