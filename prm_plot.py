@@ -26,7 +26,6 @@ and sklearn (for cross-validation plots).
 
 import pandas as ps
 import numpy as np
-import pandas as ps
 import matplotlib.pyplot as pp
 from sklearn.model_selection import GridSearchCV
 
@@ -101,9 +100,9 @@ class sprmplot(sprm,ABLine2D):
 
     def plot_yyp(self,ytruev=[],Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False):
         """
-        Plotyyp will plot y vs y predicted for SPRM opbjects
+        plot_yyp will plot y vs y predicted for SPRM opbjects
         Optional inputs: 
-            ytrue: array (new_cases,) of predictands
+            ytruev: array (new_cases,) of predictands
             Xn: array (new_cases,variables) of predictors 
             If these arguments are supplied, SPRM predictions for ytrue will be 
                 made from Xn through res_sprm.predict()
@@ -177,6 +176,8 @@ class sprmplot(sprm,ABLine2D):
         
     def plot_coeffs(self,entity="coef_",truncation=0,columns=[],title=[]):
         """
+        plot_coeffs will plot estimated model parameters, with option to 
+        truncate (useful if highly multivariate) 
         Optional Inputs: 
             entity, str, exact name of attribute from sprm object to be plotted
             truncation, float in [0,1), Percentage of smallest and largest 
@@ -219,6 +220,20 @@ class sprmplot(sprm,ABLine2D):
         
         
     def plot_projections(self,Xn=[],label=[],components = [0,1],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False):
+        
+        """
+        plot_projections will plot the score space  
+        Optional inputs: 
+            Xn: array (new_cases,variables) of predictors 
+            If supplied, SPRM projections for new cases will be 
+                made from Xn through res_sprm.transform()
+            label: string: name of variable to be plotted. Will show in legend.
+            names: list or tuple of strings, casenames from training set
+            namesv: list or tuple of strings, casenames from test set
+            title: String containing plot title
+            legend_pos: string containing legend position
+            onlyval: boolean: only plot validation cases
+        """
         
         if len(label)==0:
             label = 'none'
@@ -280,6 +295,26 @@ class sprmplot(sprm,ABLine2D):
         
     def plot_caseweights(self,Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False,mode='overall'):
         
+        """
+        plot_caseweights will plot caseweights
+        Optional inputs: 
+            Xn: array (new_cases,variables) of predictors 
+            If supplied, SPRM projections for new cases will be 
+                made from Xn through res_sprm.weightnewx()
+            label: string: name of variable to be plotted. Will show in legend.
+            names: list or tuple of strings, casenames from training set
+            namesv: list or tuple of strings, casenames from test set
+            title: String containing plot title
+            legend_pos: string containing legend position
+            onlyval: boolean: only plot validation cases
+            mode: str, which weights to plot for cases from training set, 
+                - 'overall': combined caseweights
+                - 'x': predictor block 
+                - 'y': predictand block
+                Since for validation cases y is unknown, 'x' caseweights are 
+                plotted by default there. 
+        """
+        
         if len(label)==0:
             label = 'none'
         fig = pp.figure()
@@ -330,10 +365,34 @@ class sprmplot(sprm,ABLine2D):
 class sprmplotcv(sprm,GridSearchCV):
     
     def __init__(self,res_sprm_cv,colors,*args):
+        
+        """
+        Initialize with 
+        res_sprm_cv, an GridSearchCV cross-validated sprm object 
+        
+        Only mandatory input is colors, a list of colors for 
+            [0] borders of pane 
+            [1] plot background
+            [2] marker fill
+            [3] diagonal line 
+            [4] marker contour, if different from fill
+            [5] marker color for new cases, if applicable
+            [6] marker color for harsh calibration outliers
+            [7] marker color for harsh prediction outliers
+        
+        """
+        
         self.res_sprm_cv = res_sprm_cv
         self.colors = colors
         
     def cv_score_table(self):
+        
+        """
+        Internal function reorganizing sklearn GridSearchCV results to pandas 
+        table. 
+        The function adds the cv score table to the object as cv_score_table_
+        """
+        
         n_settings = len(self.res_sprm_cv.cv_results_['params'])
         etas = [self.res_sprm_cv.cv_results_['params'][i]['eta'] for i in range(0,n_settings)]
         components = [self.res_sprm_cv.cv_results_['params'][i]['n_components'] for i in range(0,n_settings)]
@@ -341,6 +400,14 @@ class sprmplotcv(sprm,GridSearchCV):
         setattr(self,'cv_score_table_',cv_score_table)
         
     def eta_ncomp_contour(self,title='SPRM Cross-Validation Contour Plot'):
+        
+        """
+        Function to draw contour plot from cross-valation results. 
+        Optional Input: 
+        title, str. Plot title. 
+        
+        """
+        
         if not(hasattr(self,'cv_score_table_')):
             self.cv_score_table()
         fig = pp.figure()
