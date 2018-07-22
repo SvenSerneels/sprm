@@ -204,7 +204,8 @@ Example (continued)
   
 - plot y vs y predicted, including test cases
   
-        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. y            predicted")
+        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. 
+                y predicted")            
         res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted")
         
    ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
