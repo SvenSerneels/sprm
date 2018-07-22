@@ -161,13 +161,13 @@ Paramaters
 Methods
 -------
 - plot_coeffs(entity="coef_",truncation=0,columns=[],title=[]): Plot regression coefficients, loadings, etc. with the option only to plot the x% smallest and largets coefficients (truncation) 
-- plot_yyp(ytruev=[],Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False): Plot y vs y predicted. both for cases that the models has been trained with (no additional input) or new cases (requires ytruev and Xn), with the option to plot only the latter (option onlyval = True). Option to plot case names if supplied as list. 
+- plot_yyp(ytruev=[],Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False): Plot y vs y predicted. 
 - plot_projections(Xn=[],label=[],components = [0,1],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False): Plot score space. 
 - plot_caseweights(Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False,mode='overall'): Plot caseweights, with the option to plot 'x', 'y' or 'overall' case weights for cases used to train the model. For new cases, only 'x' weights can be plotted. 
 
 Remark
 ------
-The latter 3 functions will work both for cases that the models has been trained with (no additional input) or new cases (requires Xn and in case of plot_ypp, ytruev), with the option to plot only the latter (option onlyval = True). All three functions have the option to plot case names if supplied as list.       
+The latter 3 methods will work both for cases that the models has been trained with (no additional input) or new cases (requires Xn and in case of plot_ypp, ytruev), with the option to plot only the latter (option onlyval = True). All three functions have the option to plot case names if supplied as list.       
 
 Ancillary classes
 ------------------ 
@@ -198,13 +198,13 @@ Example (continued)
 - plot y vs y predicted, training cases only: 
 
         res_sprm_plot.plot_yyp(label=label,title="AIG SPRM y vs. y predicted")
-        res_sprm_plot.plot_yyp(label=label,, names=names, title="AIG SPRM y vs. y predicted")
+        res_sprm_plot.plot_yyp(label=label,names=names,title="AIG SPRM y vs. y predicted")
 
   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
   
 - plot y vs y predicted, including test cases
   
-        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. y              predicted")
+        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. y            predicted")
         res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted")
         
    ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
