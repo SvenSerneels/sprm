@@ -15,6 +15,14 @@ The method performs four tasks at the same time in a single, consistent estimate
         
 The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
 
+The repository contains
+- The estimator (prm.py) 
+- Plotting functionality based on Matplotlib (prm_plot.py)
+- Robust data pre-processing (robcent.py) 
+
+The SPRM estimator
+==================
+
 The main SPRM implementation yields a class with the following structure:
 
 Dependencies
@@ -119,7 +127,118 @@ To run a toy example:
                                    "eta": np.arange(.1,.9,.05).tolist()})  
         res_sprm_cv.fit(X0[:2666],y0[:2666])  
         res_sprm_cv.best_params_
+ 
+ 
+Plotting functionality
+======================
+
+The file prm_plot.py contains a set of plot functions based on Matplotlib. The class sprmplot contains plots for sprm objects, wheras the class sprmplotcv contains a plot for cross-validation. 
+
+Dependencies
+------------
+- pandas
+- numpy
+- matplotlib.pyplot
+- for plotting cross-validation results: sklearn.model_selection.GridSearchCV
+
+Paramaters
+----------
+- res_sprm, sprm. An sprm class object that has been fit.  
+- colors, list of str entries. Only mandatory input. Elements determine colors as: 
+    - \[0\]: borders of pane 
+    - \[1\]: plot background
+    - \[2\]: marker fill
+    - \[3\]: diagonal line 
+    - \[4\]: marker contour, if different from fill
+    - \[5\]: marker color for new cases, if applicable
+    - \[6\]: marker color for harsh calibration outliers
+    - \[7\]: marker color for harsh prediction outliers
+- markers, a list of str entries. Elements determkine markers for: 
+    - \[0\]: regular cases 
+    - \[1\]: moderate outliers 
+    - \[2\]: harsh outliers 
+    
+Methods
+-------
+- plot_coeffs(entity="coef_",truncation=0,columns=[],title=[]): Plot regression coefficients, loadings, etc. with the option only to plot the x% smallest and largets coefficients (truncation) 
+- plot_yyp(ytruev=[],Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False): Plot y vs y predicted. both for cases that the models has been trained with (no additional input) or new cases (requires ytruev and Xn), with the option to plot only the latter (option onlyval = True). Option to plot case names if supplied as list. 
+- plot_projections(Xn=[],label=[],components = [0,1],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False): Plot score space. 
+- plot_caseweights(Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False,mode='overall'): Plot caseweights, with the option to plot 'x', 'y' or 'overall' case weights for cases used to train the model. For new cases, only 'x' weights can be plotted. 
+
+Remark
+------
+The latter 3 functions will work both for cases that the models has been trained with (no additional input) or new cases (requires Xn and in case of plot_ypp, ytruev), with the option to plot only the latter (option onlyval = True). All three functions have the option to plot case names if supplied as list.       
+
+Ancillary classes
+------------------ 
+- sprmplotcv has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
+- ABline2D plots the first diagonal in y vs y predicted plots. 
+
+Example (continued) 
+-------------------
+- initialize some values: 
+   
+        colors = ["white","#BBBBDD","#0000DD",'#1B75BC','#4D4D4F','orange','red','black']
+        markers = ['o','d','v']
+        label = ["AIG"]
+        names = [str(i) for i in range(1,len(res_sprm.y)+1)]
+        namesv = [str(i) for i in range(1,len(y0[2667:])+1)]
         
+- run sprmplot: 
+
+        res_sprm_plot = sprmplot(res_sprm,colors)
+        
+- plot coefficients: 
+
+        res_sprm_plot.plot_coeffs(title="All AIG SPRM scaled b")
+        res_sprm_plot.plot_coeffs(truncation=.05,columns=columns,title="5% smallest and largest AIG sprm b")
+        
+  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/edit/master/AIG_b.png "AIG SPRM regression coefficients")
+
+- plot y vs y predicted, training cases only: 
+
+        res_sprm_plot.plot_yyp(label=label,title="AIG SPRM y vs. y predicted")
+        res_sprm_plot.plot_yyp(label=label,, names=names, title="AIG SPRM y vs. y predicted")
+
+  ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/edit/master/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
+  
+- plot y vs y predicted, including test cases
+  
+        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. y              predicted")
+        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted")
+        
+   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/edit/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
+
+- plot y vs y predicted, only test set cases: 
+
+        res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted",onlyval=True)
+  
+- plot score space, options as above, with the second one shown here: 
+
+        res_sprm_plot.plot_projections(Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM score space, components 1 and 2")
+        res_sprm_plot.plot_projections(Xn=X0[2667:],label=label,title="AIG SPRM score space, components 1 and 2")
+        res_sprm_plot.plot_projections(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM score space, components 1 and 2",onlyval=True)
+        
+  
+   ![AIG sprm score space](https://github.com/SvenSerneels/sprm/edit/master/AIG_T12.png "AIG SPRM score space")
+
+- plot caseweights, options as above, with the second one shown here:
+
+        res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM caseweights")
+        res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,title="AIG SPRM caseweights")
+        res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM caseweights",onlyval=True)  
+        
+   ![AIG sprm caseweights](https://github.com/SvenSerneels/sprm/edit/master/AIG_caseweights.png "AIG SPRM caseweights")
+   
+
+- plot cross-validation results: 
+
+        res_sprm_plot_cv = sprmplotcv(res_sprm_cv,colors)
+        res_sprm_plot_cv.eta_ncomp_contour()
+        res_sprm_plot_cv.cv_score_table_
+        
+  ![AIG sprm CV results](https://github.com/SvenSerneels/sprm/edit/master/AIG_CV.png "AIG SPRM CV results")
+  
         
 References
 ----------
@@ -132,5 +251,4 @@ Work to do
 - while the code is aligned with sklearn, it does not yet 100% follow the naming conventions therein
 - optimize for speed 
 - manipulations in robcent can be written more elegantly
-- write custom plotting utilities
 - suggestions always welcome
