@@ -193,7 +193,7 @@ Example (continued)
         res_sprm_plot.plot_coeffs(title="All AIG SPRM scaled b")
         res_sprm_plot.plot_coeffs(truncation=.05,columns=columns,title="5% smallest and largest AIG sprm b")
         
-  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/blob/master/AIG_CV.png "AIG SPRM regression coefficients")
+  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/blob/master/AIG_b.png "AIG SPRM regression coefficients")
 
 - plot y vs y predicted, training cases only: 
 
