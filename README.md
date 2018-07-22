@@ -193,21 +193,21 @@ Example (continued)
         res_sprm_plot.plot_coeffs(title="All AIG SPRM scaled b")
         res_sprm_plot.plot_coeffs(truncation=.05,columns=columns,title="5% smallest and largest AIG sprm b")
         
-  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/edit/master/AIG_b.png "AIG SPRM regression coefficients")
+  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/blob/master/AIG_CV.png "AIG SPRM regression coefficients")
 
 - plot y vs y predicted, training cases only: 
 
         res_sprm_plot.plot_yyp(label=label,title="AIG SPRM y vs. y predicted")
         res_sprm_plot.plot_yyp(label=label,, names=names, title="AIG SPRM y vs. y predicted")
 
-  ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/edit/master/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
+  ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
   
 - plot y vs y predicted, including test cases
   
         res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,names=names,namesv=namesv,title="AIG SPRM y vs. y              predicted")
         res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted")
         
-   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/edit/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
+   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
 
 - plot y vs y predicted, only test set cases: 
 
@@ -220,7 +220,7 @@ Example (continued)
         res_sprm_plot.plot_projections(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM score space, components 1 and 2",onlyval=True)
         
   
-   ![AIG sprm score space](https://github.com/SvenSerneels/sprm/edit/master/AIG_T12.png "AIG SPRM score space")
+   ![AIG sprm score space](https://github.com/SvenSerneels/sprm/blob/master/AIG_T12.png "AIG SPRM score space")
 
 - plot caseweights, options as above, with the second one shown here:
 
@@ -228,7 +228,7 @@ Example (continued)
         res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,title="AIG SPRM caseweights")
         res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM caseweights",onlyval=True)  
         
-   ![AIG sprm caseweights](https://github.com/SvenSerneels/sprm/edit/master/AIG_caseweights.png "AIG SPRM caseweights")
+   ![AIG sprm caseweights](https://github.com/SvenSerneels/sprm/blob/master/AIG_caseweights.png "AIG SPRM caseweights")
    
 
 - plot cross-validation results: 
@@ -237,7 +237,7 @@ Example (continued)
         res_sprm_plot_cv.eta_ncomp_contour()
         res_sprm_plot_cv.cv_score_table_
         
-  ![AIG sprm CV results](https://github.com/SvenSerneels/sprm/edit/master/AIG_CV.png "AIG SPRM CV results")
+  ![AIG sprm CV results](https://github.com/SvenSerneels/sprm/blob/master/AIG_CV.png "AIG SPRM CV results")
   
         
 References
