@@ -22,7 +22,7 @@ setuptools.setup(
     description="Sparse Partial Robust M Regression, including plot functions",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/SvenSerneels/sprm/",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 3",
