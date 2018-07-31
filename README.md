@@ -16,9 +16,15 @@ The method performs four tasks at the same time in a single, consistent estimate
 The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
 
 The repository contains
-- The estimator (prm.py) 
-- Plotting functionality based on Matplotlib (prm_plot.py)
+- The estimator (sprm.py) 
+- Plotting functionality based on Matplotlib (as well in sprm.py)
 - Robust data pre-processing (robcent.py) 
+
+How to install
+--------------
+The package is distributed through PyPI, so install through: 
+        
+        pip install sprm 
 
 The SPRM estimator
 ==================
@@ -102,18 +108,17 @@ To run a toy example:
 
         import pandas as ps
         data = ps.read_csv("./Returns_shares.csv")
+        columns = data.columns[2:8]
         data = data.values[:,2:8]
         X = data[:,0:5]
         y = data[:,5]
         X0 = X.astype('float')
         y0 = y.astype('float')
-        runfile(".../robcent.py")
-        runfile(".../prm.py")
         
 - Estimate and predict by SPRM
         
-        columns = data.columns[2:8]
-        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
+        from sprm import sprm
+        res_sprm = sprm.sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
         res_sprm.fit(X0[:2666],y0[:2666])
         res_sprm.predict(X0[2666:])
         res_sprm.transform(X0[2666:])
@@ -123,7 +128,8 @@ To run a toy example:
         
 - Cross-validated using GridSearchCV: 
         
-        res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": [1, 2, 3], 
+        from sklearn.model_selection import GridSearchCV 
+        res_sprm_cv = GridSearchCV(sprm.sprm(), cv=10, param_grid={"n_components": [1, 2, 3], 
                                    "eta": np.arange(.1,.9,.05).tolist()})  
         res_sprm_cv.fit(X0[:2666],y0[:2666])  
         res_sprm_cv.best_params_
@@ -132,7 +138,7 @@ To run a toy example:
 Plotting functionality
 ======================
 
-The file prm_plot.py contains a set of plot functions based on Matplotlib. The class sprmplot contains plots for sprm objects, wheras the class sprmplotcv contains a plot for cross-validation. 
+The file sprm.py also contains a set of plot functions based on Matplotlib. The class plot contains plots for sprm objects, wheras the class plot_cv contains a plot for cross-validation. 
 
 Dependencies
 ------------
@@ -177,16 +183,17 @@ Ancillary classes
 Example (continued) 
 -------------------
 - initialize some values: 
-   
+        
+        import numpy as np
         colors = ["white","#BBBBDD","#0000DD",'#1B75BC','#4D4D4F','orange','red','black']
         markers = ['o','d','v']
         label = ["AIG"]
         names = [str(i) for i in range(1,len(res_sprm.y)+1)]
         namesv = [str(i) for i in range(1,len(y0[2667:])+1)]
         
-- run sprmplot: 
+- run sprm.plot: 
 
-        res_sprm_plot = sprmplot(res_sprm,colors)
+        res_sprm_plot = sprm.plot(res_sprm,colors)
         
 - plot coefficients: 
 
@@ -234,7 +241,7 @@ Example (continued)
 
 - plot cross-validation results: 
 
-        res_sprm_plot_cv = sprmplotcv(res_sprm_cv,colors)
+        res_sprm_plot_cv = sprm.plot_cv(res_sprm_cv,colors)
         res_sprm_plot_cv.eta_ncomp_contour()
         res_sprm_plot_cv.cv_score_table_
         
