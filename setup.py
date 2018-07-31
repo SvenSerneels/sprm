@@ -36,18 +36,18 @@ setup(
     url="https://github.com/SvenSerneels/sprm",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
     packages=find_packages('src'),  # include all packages under src
     package_dir={'':'src'},   # tell distutils packages are under src
     include_package_data = True,
     install_requires=[
-        'numpy>=1.6.0',
-        'scipy>=0.10.0',
-        'matplotlib>=2.2.2',
-        'scikit-learn>=0.19.2',
-        'pandas>=0.23.3'
+        'numpy>=1.5.0',
+        'scipy>=0.8.0',
+        'matplotlib>=2.2.0',
+        'scikit-learn>=0.19.0',
+        'pandas>=0.21.0'
     ]
 )
 
