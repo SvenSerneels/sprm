@@ -438,7 +438,11 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if self.verbose:
             print("Final Model: Variables retained for " + str(self.n_components) + " latent variables: \n" 
                  + str(res_snipls.colret_) + "\n")
-        b_rescaled = np.reshape(yrc.col_sca/Xrc.col_sca,(5,1))*b
+
+        # Is not "5" a constant of example?
+        # b_rescaled = np.reshape(yrc.col_sca/Xrc.col_sca,(5,1))*b
+        # Corresponding to variable dimension (X-dimension : p)
+        b_rescaled = np.reshape(yrc.col_sca/Xrc.col_sca,(p,1))*b
         if(self.centring == "mean"):
             intercept = np.mean(y - np.matmul(X,b_rescaled))
         else:
