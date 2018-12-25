@@ -258,5 +258,4 @@ Work to do
 ----------
 - while the code is aligned with sklearn, it does not yet 100% follow the naming conventions therein
 - optimize for speed 
-- manipulations in robcent can be written more elegantly
 - suggestions always welcome
