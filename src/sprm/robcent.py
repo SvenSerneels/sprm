@@ -188,6 +188,7 @@ class robcent(_BaseComposition,BaseEstimator):
         
         """
         Standardize data on previously estimated location and scale. 
+        Number of columns needs to match.
         """
         
         Xns = self.scale_data(Xn,self.col_loc_,self.col_sca_)

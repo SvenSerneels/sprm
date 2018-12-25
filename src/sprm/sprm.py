@@ -32,6 +32,8 @@ Module containing:
 
 Depends on robcent class for robustly centering and scaling data 
 
+Version 0.1.7: 1 bug removed (l. 437). Made consistent with new robcent function.
+
 @author: Sven Serneels, Ponalytics
 """
 import numpy as np
