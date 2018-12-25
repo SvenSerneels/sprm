@@ -39,7 +39,7 @@ import pandas as ps
 from scipy.stats import norm, chi2
 from sklearn.base import RegressorMixin,BaseEstimator,TransformerMixin
 from sklearn.utils.metaestimators import _BaseComposition
-from .robcent import robcent
+# from .robcent import robcent
 import copy
 import matplotlib.pyplot as pp
 from sklearn.model_selection import GridSearchCV
@@ -87,12 +87,11 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         X = X.astype("float64")
         (n,p) = X.shape
         y = y.astype("float64")
-        Xh = robcent(X)
-        Xh.daprpr(["mean","None"])
-        X0 = Xh.Xm
-        yh = robcent(y)
-        yh.daprpr(["mean","None"])
-        y0 = yh.Xm
+        centring = robcent(center='mean',scale='None')
+        X0= centring.fit(X)
+        mX = centring.col_loc_
+        my = np.mean(y)
+        y0 = y - my
         T = np.empty((n,self.n_components),float) 
         W = np.empty((p,self.n_components),float)  
         P = np.empty((p,self.n_components),float)
@@ -101,8 +100,8 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         yev = np.empty((self.n_components,1),float)
         B = np.empty((p,1),float) 
         oldgoodies = np.array([])
-        Xi = Xh.Xm
-        yi = np.matrix(yh.Xm).T
+        Xi = X0
+        yi = np.matrix(y0).T
         for i in range(1,self.n_components+1):
             wh =  Xi.T * yi
             wh = wh/np.linalg.norm(wh,"fro")
@@ -147,7 +146,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             R = B
             T = np.empty((n,n_components))
             T.fill(0)
-        yp = np.array(X0 * B + yh.col_loc).astype("float64")
+        yp = np.array(X0 * B + my).astype("float64")
         setattr(self,"x_weights_",W)
         setattr(self,"x_loadings_",P)
         setattr(self,"C_",C)
@@ -159,17 +158,15 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         setattr(self,"fitted_",yp.reshape(-1))
         setattr(self,"x_Rweights_",R)
         setattr(self,"colret_",colret)
-        setattr(self,"x_loc_",Xh.col_loc)
-        setattr(self,"y_loc_",yh.col_loc)
-        setattr(self,"x_sca_",Xh.col_sca)
-        setattr(self,"y_sca_",yh.col_sca)
+        setattr(self,"x_loc_",mX)
+        setattr(self,"y_loc_",my)
+        setattr(self,"centring_",centring)
         return(self)
         
     
     def predict(self,Xn):
-        Xnc = robcent(Xn)
-        Xnc.daprpr([self.x_loc_,self.x_sca_])
-        return(np.matmul(Xnc.Xm,self.coef_) + self.y_loc_)
+        Xnc = self.centring.scale_data(Xn,self.x_loc_,self.x_sca_)
+        return(np.matmul(Xnc,self.coef_) + self.y_loc_)
 
 
 
@@ -196,8 +193,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                  (e.g. 0.975, only relevant if fun='Hampel')
     probp3: float, probability cutoff for start of outlier omission 
                  (e.g. 0.999, only relevant if fun='Hampel')
-    centring: str, type of centring ('mean' or 'median' [recommended])
-    scaling: str, type of scaling ('std','mad' [recommended] or 'None')
+    centre: str, type of centring ('mean' or 'median' [recommended])
+    scale: str, type of scaling ('std','mad' [recommended] or 'None')
     verbose: boolean, specifying verbose mode
     maxit: int, maximal number of iterations in M algorithm
     tol: float, tolerance for convergence in M algorithm 
@@ -221,7 +218,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     """
     
     def __init__(self,n_components=1,eta=.5,fun='Hampel',probp1=0.95
-                 ,probp2=0.975,probp3=0.999,centring='median',scaling='mad'
+                 ,probp2=0.975,probp3=0.999,centre='median',scale='mad'
                  ,verbose=True,maxit=100,tol=0.01,start_cutoff_mode='specific'
                  ,start_X_init='pcapp',columns=False,copy=True):
         self.n_components = int(n_components) 
@@ -230,8 +227,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.probp1 = probp1
         self.probp2 = probp2
         self.probp3 = probp3
-        self.centring = centring
-        self.scaling = scaling
+        self.centre = centre
+        self.scale = scale
         self.verbose = verbose
         self.maxit = maxit
         self.tol = tol
@@ -302,25 +299,27 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if ny != n:
             raise MyException("Number of cases in y and X must be identical.")
 
-        Xrc = robcent(X)
-        yrc = robcent(y)
-        Xrc.daprpr([self.centring,self.scaling])
-        yrc.daprpr([self.centring,self.scaling])
-        ys = yrc.Xs.astype('float64')
-        Xs = Xrc.Xs.astype('float64')
+        scaling = robcent(center=self.centre, scale=self.scale)
+        Xs = scaling.fit(X).astype('float64')
+        mX = scaling.col_loc_
+        sX = scaling.col_sca_
+        ys = scaling.fit(y).astype('float64')
+        my = scaling.col_loc_
+        sy = scaling.col_sca_
+
         if (self.start_X_init=='pcapp'):
             U, S, V = np.linalg.svd(Xs)
             spc = np.square(S)
             spc /= np.sum(spc)
             relcomp = max(np.where(spc - self.brokenstick(min(p,n))[:,0] <=0)[0][0],1)
-            Urc = robcent(np.array(U[:,0:relcomp]))
-            Urc.daprpr([self.centring,self.scaling])
+            Urc = np.array(U[:,0:relcomp])
+            Us = scaling.fit(Urc)
         else: 
-            Urc = Xrc
-        wx = np.sqrt(np.array(np.sum(np.square(Urc.Xs),1),dtype=np.float64))
+            Us = Xs
+        wx = np.sqrt(np.array(np.sum(np.square(Us),1),dtype=np.float64))
         wx = wx/np.median(wx)
-        if [self.centring,self.scaling]==['median','mad']:
-            wy = np.array(abs(yrc.Xs),dtype=np.float64)
+        if [self.centre,self.scale]==['median','mad']:
+            wy = np.array(abs(ys),dtype=np.float64)
         else:
             wy = (y - np.median(y))/(1.4826*np.median(abs(y-np.median(y))))
         self.probcty_ = norm.ppf(self.probp1)
@@ -356,15 +355,15 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         wte = wx
         wye = wy
         WEmat = np.array([np.sqrt(we) for i in range(1,p+1)],ndmin=1).T    
-        Xw = np.multiply(Xrc.Xs,WEmat).astype("float64")
+        Xw = np.multiply(Xs,WEmat).astype("float64")
         yw = ys*np.sqrt(we)
         loops = 1
         rold = 1E-5
         difference = 1
         # Begin at iteration
-        while ((difference > self.tol) & (loops < self.maxit)):
-            res_snipls = snipls(self.eta,self.n_components,
+        res_snipls = snipls(self.eta,self.n_components,
                             self.verbose,self.columns,self.copy)
+        while ((difference > self.tol) & (loops < self.maxit)):
             res_snipls.fit(Xw,yw)
             T = np.divide(res_snipls.x_scores_,WEmat[:,0:(self.n_components)])
             b = res_snipls.coef_
@@ -374,12 +373,11 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 r = abs(r)/(1.4826 * np.median(abs(r)))
             else:
                 r = abs(r)/(1.4826 * np.median(abs(r[r != 0])))
-            scalet = self.scaling
+            scalet = self.scale
             if (scalet == "None"):
-                scalet = "mad"
-            dt = robcent(T)
-            dt.daprpr([self.centring, scalet])
-            wtn = np.sqrt(np.array(np.sum(np.square(dt.Xs),1),dtype=np.float64))
+                scaling.set_params(scale = "mad") 
+            dt = scaling.fit(T)
+            wtn = np.sqrt(np.array(np.sum(np.square(dt),1),dtype=np.float64))
             wtn = wtn/np.median(wtn)
             wtn = wtn.reshape(-1)
             wye = r
@@ -409,7 +407,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             if (len(w0) >= (n/2)):
                 break
             WEmat = np.array([np.sqrt(we) for i in range(1,p+1)],ndmin=1).T    
-            Xw = np.multiply(Xrc.Xs,WEmat).astype("float64")
+            Xw = np.multiply(Xs,WEmat).astype("float64")
             yw = ys*np.sqrt(we)
             loops += 1
         if (difference > self.maxit):
@@ -427,29 +425,25 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         P = res_snipls.x_loadings_
         W = res_snipls.x_weights_
         R = res_snipls.x_Rweights_
-        Xrw = np.array(np.multiply(Xrc.Xs,np.sqrt(WEmat)).astype("float64"))
-        Xrw = robcent(Xrw)
-        Xrw.daprpr([self.centring,"None"]) 
-        # these four lines likely phantom code 
-        # in R implementation multiplication just with centered data 
-                
-        # T = Xrw.Xm.astype("float64")*R 
+        Xrw = np.array(np.multiply(Xs,np.sqrt(WEmat)).astype("float64"))
+        scaling.set_params(scale='None')
+        Xrw = scaling.fit(Xrw) 
         T = Xs * R
         if self.verbose:
             print("Final Model: Variables retained for " + str(self.n_components) + " latent variables: \n" 
                  + str(res_snipls.colret_) + "\n")
-        b_rescaled = np.reshape(yrc.col_sca/Xrc.col_sca,(5,1))*b
-        if(self.centring == "mean"):
+        b_rescaled = np.reshape(sy/sX,(p,1))*b
+        if(self.centre == "mean"):
             intercept = np.mean(y - np.matmul(X,b_rescaled))
         else:
             intercept = np.median(np.reshape(y - np.matmul(X,b_rescaled),(-1)))
         # This median calculation produces slightly different result in R and Py
         yfit = np.matmul(X,b_rescaled) + intercept   
-        if (self.scaling!="None"):
-            if (self.centring == "mean"):
-                b0 = np.mean(yrc.Xs.astype("float64") - np.matmul(Xrc.Xs.astype("float64"),b))
+        if (self.scale!="None"):
+            if (self.centre == "mean"):
+                b0 = np.mean(ys.astype("float64") - np.matmul(Xs.astype("float64"),b))
             else:
-                b0 = np.median(np.array(yrc.Xs.astype("float64") - np.matmul(Xrc.Xs.astype("float64"),b)))
+                b0 = np.median(np.array(ys.astype("float64") - np.matmul(Xs.astype("float64"),b)))
             # yfit2 = (np.matmul(Xrc.Xs.astype("float64"),b) + b0)*yrc.col_sca + yrc.col_loc
             # already more generally included
         else:
@@ -477,10 +471,11 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         setattr(self,"y_caseweights_",wye)
         setattr(self,"caseweights_",we)
         setattr(self,"colret_",res_snipls.colret_)
-        setattr(self,"x_loc_",Xrc.col_loc)
-        setattr(self,"y_loc_",yrc.col_loc)
-        setattr(self,"x_sca_",Xrc.col_sca)
-        setattr(self,"y_sca_",yrc.col_sca)
+        setattr(self,"x_loc_",mX)
+        setattr(self,"y_loc_",my)
+        setattr(self,"x_sca_",sX)
+        setattr(self,"y_sca_",sy)
+        setattr(self,'scaling',scaling)
         return(self)
         pass
     
@@ -495,23 +490,22 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             ValueError('New data must have seame number of columns as the ones the model has been trained with')
-        Xnc = robcent(Xn)
-        Xnc.daprpr([self.x_loc_,self.x_sca_])
-        return(Xnc.Xs*self.x_Rweights_)
+        Xnc = self.scaling.scale_data(Xn,self.x_loc_,self.x_sca_)
+        return(Xnc*self.x_Rweights_)
         
     def weightnewx(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             ValueError('New data must have seame number of columns as the ones the model has been trained with')
         Tn = self.transform(Xn)
-        scalet = self.scaling
+        scaling = self.scaling
+        scalet = self.scale
         if (scalet == "None"):
-            scalet = "mad"
+            scaling.set_params(scale = "mad")
         if isinstance(Tn,np.matrix):
             Tn = np.array(Tn)
-        dtn = robcent(Tn)
-        dtn.daprpr([self.centring, scalet])
-        wtn = np.sqrt(np.array(np.sum(np.square(dtn.Xs),1),dtype=np.float64))
+        dtn = scaling.fit(Tn)
+        wtn = np.sqrt(np.array(np.sum(np.square(dtn),1),dtype=np.float64))
         wtn = wtn/np.median(wtn)
         wtn = wtn.reshape(-1)
         if (self.fun == "Fair"):

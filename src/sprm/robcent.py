@@ -1,147 +1,196 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Feb  4 17:23:15 2018
+Created on Sun Feb 4 2018
+Updated on Sun Dec 16 2018
 
 Class for robust centering and scaling of input data for regression and machine
 learning 
 
-Input X to delivered as numerical vector or 2D-array 
-Remark: when supplied as np.matrix, functions involving np.median will crash.  
+Version 2.0: Code entirely restructured compared to version 1.0. 
+Code made consistent with sklearn logic: fit(data,params) yields results. 
+Code makes more effciient use of numpy builtin estimators.
 
-Methods: 
-    mean - colwise mean, appended to object as "col_mean"
-    median - colwise median, appended to object as "col_med"
-    std - colwise std, appended to object as "col_std"
-    mad - colwise median absolute deviation (consistency factor c), 
-          appended to object as "col_mad"
-    daprpr - centers and scales object.X according to cpars=[center,scale] with 
-             center and scale the names of one of the functions listed above, 
-             or "None". Results of centered and scaled data appended as Xm and
-             Xs, and latest location and scale appended as "col_loc" and 
-             "col_sca" 
+Parameters
+----------
+    center: str, location estimator. Presently allowed: 'mean', 'median' or
+                 'None'. 
+    scale: str, scale estimator. Presently allowed: 'mad', 'std' or 'None'. 
+                 
+    Note that 'sd' also gives access to robust trimmed stds.
+
+Methods
+-------
+    fit(X,trimming): Will scale X using 'center' and 'scale' estimators. 
+    mean(X,trimming): Column-wise mean, appended to object as "col_mean_".
+    median(X): Column-wise median, appended to object as "col_med_".
+    std(X,trimming): Column-wise std, appended to object as "col_std_".
+    mad(X,c):  Column-wise median absolute deviation, 
+            appended to object as "col_mad_".
+    scale_data(X,m,s) - centers and scales X on center m (as vector) and 
+            scale s (as vector).
+            
+Arguments for methods: 
+    X: array-like, n x p, the data.
+    trimming: float, fraction to be trimmed (must be in (0,1)).
+    c, float, consistency factor.
+             
+Remarks
+-------
+Options for classical estimators 'mean' and 'std' also give access to robust 
+trimmed versions.
 
 @author: Sven Serneels, Ponalytics
 """
 
-import pandas as ps
 import numpy as np
+import scipy.stats as sps
+from statsmodels import robust as srs
+from sklearn.base import BaseEstimator
+from sklearn.utils.metaestimators import _BaseComposition
 
-class robcent:
+class MyException(Exception):
+        pass
+
+class robcent(_BaseComposition,BaseEstimator):
     
-    def __init__(self,X=0):
-        self.X = X
+    def __init__(self,center='mean',scale='std'):
         
-    def mad(self,c=1.4826):
-        n = self.X.shape
-        if len(n) > 1:
-            p = n[1]
-        else:
-            p = 1
-        n = n[0]
-        if not(hasattr(self,"col_med")):
-            m = np.apply_along_axis(np.median,0,self.X)
-        else: 
-            m = self.col_med
-        if p==1:
-            # Xm = np.matrix(X - m).T
-            # s = np.median(abs(Xm))
-            # while np.median is broken: 
-            Xmf = ps.DataFrame(abs(self.X - m))
-            s = Xmf.aggregate(np.median,axis=0)*c
-        else:
-            Xm = self.X - np.matrix([m for i in range(1,n+1)])
-            s = np.apply_over_axes(np.median,np.apply_along_axis(abs,0,Xm),0)*c
-        if not(hasattr(self,"col_med")):
-            setattr(self,"col_med",m)
-        setattr(self,"col_mad",s[0])
-        return s[0]
-    
-    def median(self):
-        n = self.X.shape
-        if len(n) > 1:
-            p = n[1]
-        else:
-            p = 1
-        n = n[0]
-        if not(hasattr(self,"col_med")):
-            m = np.apply_along_axis(np.median,0,self.X)
-            setattr(self,"col_med",m)
-        else: 
-            m = self.col_med
-        return m
-    
-    def mean(self):
-        n = self.X.shape
-        if len(n) > 1:
-            p = n[1]
-        else:
-            p = 1
-        n = n[0]
-        if not(hasattr(self,"col_mean")):
-            m = np.apply_along_axis(np.mean,0,self.X)
-            setattr(self,"col_mean",m)
-        else: 
-            m = self.col_mean
-        return m
-    
-    def std(self):
-        n = self.X.shape
-        if len(n) > 1:
-            p = n[1]
-        else:
-            p = 1
-        n = n[0]
-        if not(hasattr(self,"col_std")):
-            s = np.apply_along_axis(np.std,0,self.X)
-            setattr(self,"col_std",s)
-        else: 
-            s = self.col_std
+        """
+        Initialize values. Check if correct options provided. 
+        """
+        
+        self.center = center
+        self.scale = scale 
+        self.licenter = ['mean','median','None']
+        self.liscale = ['mad','std','None']
+        if not(self.center in self.licenter):
+            raise(MyException('center options are: "mean", "median", "None"'))
+        if not(self.scale in self.liscale):
+            raise(MyException('scale options are: "mad", "std", "None"'))
+        
+    def mad(self,X,c=0.6744897501960817,**kwargs):
+        
+        """
+        Column-wise median absolute deviation. **kwargs included to allow 
+        general function call in scale_data. 
+        """
+        
+        s = srs.mad(X,c=c,axis=0)
+        setattr(self,"col_mad_",s)
+        
         return s
     
-    def daprpr(self,cpars):
+    def median(self,X,**kwargs):
         
-        n = self.X.shape
+        """
+        Column-wise median. **kwargs included to allow 
+        general function call in scale_data. 
+        """
+        
+        m = np.median(X,axis=0)
+        m = np.array(m).reshape(-1)
+        setattr(self,"col_med_",m)
+        
+        return m
+    
+    def mean(self,X,trimming=0):
+        
+        """
+        Column-wise mean or trimmed mean. Trimming to be entered as fraction. 
+        """
+        
+        m = sps.trim_mean(X,trimming,0)
+        setattr(self,"col_mean_",m)
+        
+        return m
+    
+    def std(self,X,trimming=0):
+        
+        """
+        Column-wise standard devaition or trimmed std. 
+        Trimming to be entered as fraction. 
+        """
+        
+        if trimming==0:
+            s = np.std(X,axis=0)
+            s = np.array(s).reshape(-1)
+        else: 
+            var = sps.trim_mean(np.square(X - sps.trim_mean(X,trimming,0)),
+                                trimming,0)
+            s = np.sqrt(var)
+            
+        setattr(self,"col_std_",s)    
+        return s
+    
+    def scale_data(self,X,m,s):
+        
+        """
+        Column-wise data scaling on location and scale estimates. 
+        
+        """
+        
+        n = X.shape
         if len(n) > 1:
             p = n[1]
         else:
             p = 1
-        n = n[0]   
-        if ((type(cpars[0])==str) & (type(cpars[1])==str)):
-            if cpars[0] == "None":
-                m = np.repeat(0,p)
-            else:
-                m = eval("self." + cpars[0] + "()")
-            setattr(self,"col_loc",m)    
-            if cpars[1] == "None":
-                s = np.repeat(1,p)
-            else:
-                s = eval("self." + cpars[1] + "()")
-            setattr(self,"col_sca",s)
-            Xm = []
-            Xs = []
-            if not((cpars[0] == "None") & (cpars[1] == "None")):
-                if p == 1:
-                    Xm = self.X - float(m)
-                    setattr(self,"Xm",Xm)
-                    if not(cpars[1] == "None"):
-                        Xs = Xm / float(s)
-                        setattr(self,"Xs",Xs)
-                else:
-                    Xm = self.X - np.matrix([m for i in range(1,n+1)])
-                    setattr(self,"Xm",Xm)
-                    if not(cpars[1] == "None"):
-                        Xs = Xm / np.matrix([s for i in range(1,n+1)])
-                        setattr(self,"Xs",Xs)
-        else: 
-            if p == 1:
-                Xm = self.X - float(cpars[0])
-                setattr(self,"Xm",Xm)
-                Xs = Xm / cpars[1]
-                setattr(self,"Xs",Xm)
-            else:
-                Xm = self.X - np.matrix([cpars[0] for i in range(1,n+1)])
-                setattr(self,"Xm",Xm)
-                Xs = Xm / np.matrix([cpars[1] for i in range(1,n+1)])
-                setattr(self,"Xs",Xs)
-        return self
+        n = n[0]
+        
+        if p == 1:
+            Xm = X - float(m)
+            Xs = Xm / s
+        else:
+            Xm = X - np.matrix([m for i in range(1,n+1)])
+            Xs = Xm / np.matrix([s for i in range(1,n+1)])
+        return(Xs)
+    
+    
+    def fit(self,X,**kwargs):
+        
+        """
+        Data standardization according to class' center and scale settings. 
+        Trimming fraction can be provided as keyword argument.
+        """
+        
+        n = X.shape
+        if len(n) > 1:
+            p = n[1]
+        else:
+            p = 1
+        n = n[0] 
+            
+        if 'trimming' not in kwargs:
+            trimming = 0
+        else:
+            trimming = kwargs.get('trimming')
+            
+        if self.center == "None":
+            m = np.repeat(0,p)
+        else:
+            m = eval("self." + self.center + "(X,trimming=trimming)")
+            
+        setattr(self,"col_loc_",m)    
+            
+        if self.scale == "None":
+            s = np.repeat(1,p)
+        else:
+            s = eval("self." + self.scale + "(X,trimming=trimming)")
+            
+        setattr(self,"col_sca_",s)
+            
+        Xs = self.scale_data(X,m,s)
+        setattr(self,'datas_',Xs)
+            
+        return Xs
+    
+    def predict(self,Xn):
+        
+        """
+        Standardize data on previously estimated location and scale. 
+        """
+        
+        Xns = self.scale_data(Xn,self.col_loc_,self.col_sca_)
+        setattr(self,'datans_',Xns)
+        return(Xns)
+        
