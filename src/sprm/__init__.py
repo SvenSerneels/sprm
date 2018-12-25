@@ -9,5 +9,5 @@ Created on Sun Jul 22 12:17:17 2018
 __name__ = "sprm"
 __author__ = "Sven Serneels"
 __license__ = "GNU"
-__version__ = "0.1.6"
-__date__ = "2018-07-31"
+__version__ = "0.1.7"
+__date__ = "2018-12-25"
