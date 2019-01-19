@@ -32,7 +32,7 @@ setup(
     author_email="svenserneels@gmail.com",
     description="Sparse Partial Robust M Regression, including plot functions",
     long_description=readme,
-#    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
     url="https://github.com/SvenSerneels/sprm",
     classifiers=[
         "Programming Language :: Python :: 3",
