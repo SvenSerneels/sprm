@@ -4,6 +4,19 @@ Sparse partial robust M regression
 
 Pyhton code for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
 
+Version 0.2
+-----------
+Version 0.2 is out!! 
+Changes compared to version 0.1: 
+- All functionalities can now be loaded in modular way, e.g. to use plotting functions, now source the plot function separately:
+        
+        from sprm import sprm_plot 
+        
+- The package now includes a robust M regression estimator (rm.py), which is a multiple regression only variant of sprm. 
+  It is based on the same iterative re-weighting scheme, buit does not perform dimension reduction, nor variable selection.
+- The robust preprocessing routine (robcent.py) has been re-written so as to be more consistent with sklearn. 
+
+
 Description
 -----------
 
@@ -17,8 +30,11 @@ The code is aligned to ScikitLearn, such that modules such as GridSearchCV can f
 
 The repository contains
 - The estimator (sprm.py) 
-- Plotting functionality based on Matplotlib (as well in sprm.py)
+- Plotting functionality based on Matplotlib (sprm_plot.py)
 - Robust data pre-processing (robcent.py) 
+- Robust M regression estimator (rm.py)
+- Ancillary functions for plotting (_plot_internals.py)
+- Ancillary functions for M-estimation (_m_support_functions.py)
 
 How to install
 --------------
@@ -38,11 +54,12 @@ Dependencies
 - copy
 - From <scipy.stats>: norm,chi2
 - numpy 
-- from <matplotlib>: pyplot. 
+- From <matplotlib>: pyplot. 
+- From <statsmodels>: robust. 
 
 Parameters
 ----------
-- eta: float. Sparsity parameter in \[0,1)
+- eta: float. Sparsity parameter in \[0,1). Note that eta=0 returns the non-sparse, yet robust partial robust M-regression (PRM) \[2\]. 
 - n_components: int > 1. Note that if applied on data, n_components shall take a value <= min(x_data.shape)
 - fun: str, downweighting function. 'Hampel' (recommended), 'Fair' or 'Huber'
 - probp1: float, probability cutoff for start of downweighting (e.g. 0.95)
@@ -94,7 +111,7 @@ Methods
 
 Ancillary functions 
 -------------------
-- snipls (class): sparse NIPALS regression (first described in: \[2\]) 
+- snipls (class): sparse NIPALS regression (first described in: \[3\]) 
 - Hampel: Hampel weight function 
 - Huber: Huber weight function 
 - Fair: Fair weight function 
@@ -118,7 +135,7 @@ To run a toy example:
 - Estimate and predict by SPRM
         
         from sprm import sprm
-        res_sprm = sprm.sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
+        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
         res_sprm.fit(X0[:2666],y0[:2666])
         res_sprm.predict(X0[2666:])
         res_sprm.transform(X0[2666:])
@@ -130,16 +147,31 @@ To run a toy example:
         
         import numpy as np
         from sklearn.model_selection import GridSearchCV 
-        res_sprm_cv = GridSearchCV(sprm.sprm(), cv=10, param_grid={"n_components": [1, 2, 3], 
+        res_sprm_cv = GridSearchCV(sprm(), cv=10, param_grid={"n_components": [1, 2, 3], 
                                    "eta": np.arange(.1,.9,.05).tolist()})  
         res_sprm_cv.fit(X0[:2666],y0[:2666])  
         res_sprm_cv.best_params_
- 
+        
+        
+The Robust M (RM) estimator
+===========================
+
+RM has been implemented to be consistent with SPRM. It takes the same arguments, except for 'eta' and 'n_components', 
+because it does not perform dimension reduction nor variable selection. For the same reasons, the outputs are limited to regression
+outputs. Therefore, dimension reduction outputs like x_scores_, x_loadings_, etc. are not provided. 
+        
+  Estimate and predict by RM: 
+  
+        from sprm import rm
+        res_rm = rm('Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
+        res_rm.fit(X0[:2666],y0[:2666])
+        res_rm.predict(X0[2666:])
+        
  
 Plotting functionality
 ======================
 
-The file sprm.py also contains a set of plot functions based on Matplotlib. The class plot contains plots for sprm objects, wheras the class plot_cv contains a plot for cross-validation. 
+The file sprm_plot.py contains a set of plot functions based on Matplotlib. The class sprm_plot contains plots for sprm objects, wheras the class sprm_plot_cv contains a plot for cross-validation. 
 
 Dependencies
 ------------
@@ -178,7 +210,7 @@ The latter 3 methods will work both for cases that the models has been trained w
 
 Ancillary classes
 ------------------ 
-- plot_cv has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
+- sprm_plot_cv has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
 - ABline2D plots the first diagonal in y vs y predicted plots. 
 
 Example (continued) 
@@ -192,8 +224,9 @@ Example (continued)
         namesv = [str(i) for i in range(1,len(y0[2667:])+1)]
         
 - run sprm.plot: 
-
-        res_sprm_plot = sprm.plot(res_sprm,colors)
+        
+        from sprm import sprm_plot
+        res_sprm_plot = sprm_plot(res_sprm,colors)
         
 - plot coefficients: 
 
@@ -241,7 +274,8 @@ Example (continued)
 
 - plot cross-validation results: 
 
-        res_sprm_plot_cv = sprm.plot_cv(res_sprm_cv,colors)
+        from sprm import sprm_plot_cv
+        res_sprm_plot_cv = sprm_plot_cv(res_sprm_cv,colors)
         res_sprm_plot_cv.eta_ncomp_contour()
         res_sprm_plot_cv.cv_score_table_
         
@@ -251,11 +285,14 @@ Example (continued)
 References
 ----------
 1. [Sparse partial robust M regression](https://www.sciencedirect.com/science/article/abs/pii/S0169743915002440), Irene Hoffmann, Sven Serneels, Peter Filzmoser, Christophe Croux, Chemometrics and Intelligent Laboratory Systems, 149 (2015), 50-59.
-2. [Sparse and robust PLS for binary classification](https://onlinelibrary.wiley.com/doi/abs/10.1002/cem.2775), I. Hoffmann, P. Filzmoser, S. Serneels, K. Varmuza, Journal of Chemometrics, 30 (2016), 153-162.
+2. [Partial robust M regression](https://doi.org/10.1016/j.chemolab.2005.04.007), Sven Serneels, Christophe Croux, Peter Filzmoser, Pierre J. Van Espen, Chemometrics and Intelligent Laboratory Systems, 79 (2005), 55-64.
+3. [Sparse and robust PLS for binary classification](https://onlinelibrary.wiley.com/doi/abs/10.1002/cem.2775), I. Hoffmann, P. Filzmoser, S. Serneels, K. Varmuza, Journal of Chemometrics, 30 (2016), 153-162.
         
 
 Work to do
 ----------
-- while the code is aligned with sklearn, it does not yet 100% follow the naming conventions therein
+- optimize alignment to sklearn
 - optimize for speed 
-- suggestions always welcome
+- subclass snipls assumes location centring. Coud be written more generally like rm or sprm.
+- allow matrix valued y in sprm. 
+- suggestions always welcome 
