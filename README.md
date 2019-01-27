@@ -59,7 +59,7 @@ Dependencies
 
 Parameters
 ----------
-- eta: float. Sparsity parameter in \[0,1). Note that eta=0 returns the non-sparse, yet robust partial robust M-regression (PRM) \[2\]. 
+- eta: float. Sparsity parameter in \[0,1). Note that eta=0 returns the non-sparse, yet robust, partial robust M-regression (PRM) \[2\]. 
 - n_components: int > 1. Note that if applied on data, n_components shall take a value <= min(x_data.shape)
 - fun: str, downweighting function. 'Hampel' (recommended), 'Fair' or 'Huber'
 - probp1: float, probability cutoff for start of downweighting (e.g. 0.95)
