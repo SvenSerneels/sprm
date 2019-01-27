@@ -34,3 +34,11 @@ def Hampel(x,probct,hampelb,hampelr):
         )
     wx[np.where(x > hampelr)[0]] = 0
     return(wx)
+    
+def brokenstick(n_components):
+    q = np.triu(np.ones((n_components,n_components)))
+    r = np.empty((n_components,1),float)
+    r[0:n_components,0] = (range(1,n_components+1))
+    q = np.matmul(q,1/r)
+    q /= n_components
+    return q

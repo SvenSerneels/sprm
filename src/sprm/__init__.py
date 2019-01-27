@@ -9,12 +9,13 @@ Created on Sun Jul 22 12:17:17 2018
 __name__ = "sprm"
 __author__ = "Sven Serneels"
 __license__ = "GNU"
-__version__ = "0.1.19"
-__date__ = "2019-01-26"
+__version__ = "0.2.0"
+__date__ = "2019-01-27"
 
 from .robcent import robcent
 from .sprm import snipls,sprm
 from .rm import rm
+from .sprm_plot import sprm_plot,sprm_plot_cv
 
 
 

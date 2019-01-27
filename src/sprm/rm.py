@@ -156,7 +156,6 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
             b = np.matrix(b[0]).T
             yp = np.array(Xs*b).reshape(-1)
             r = ys - yp
-            print(r.shape)
             if (len(r)/2 > np.sum(r == 0)):
                 r = abs(r)/(1.4826 * np.median(abs(r)))
             else:
