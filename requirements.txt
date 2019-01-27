@@ -16,6 +16,8 @@ scipy
 sklearn
 copy
 pandas
+statsmodels
+scipy
 
 #
 ###### Requirements with Version Specifiers ######
