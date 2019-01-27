@@ -8,30 +8,21 @@ Module containing:
     Estimators
     ----------
     Robust M Regression (RM)
-    Ancillary functions: 
-        Fair function
-        Huber function
-        Hampel function 
 
-Depends on robcent class for robustly centering and scaling data 
+Depends on robcent class for robustly centering and scaling data, as well as on
+the functions in _m_support_functions. 
 
 @author: Sven Serneels, Ponalytics
 """
 from __future__ import absolute_import, division, print_function
 from __future__ import unicode_literals
-
-import numpy as np
-import pandas as ps
-from scipy.stats import norm, chi2
 from sklearn.base import RegressorMixin,BaseEstimator
 from sklearn.utils.metaestimators import _BaseComposition
 import copy
-import matplotlib.pyplot as pp
-from sklearn.model_selection import GridSearchCV
+import numpy as np
+from scipy.stats import norm, chi2
+from . import robcent
 from ._m_support_functions import *
-
-class MyException(Exception):
-        pass
 
 class rm(_BaseComposition,BaseEstimator,RegressorMixin):
     

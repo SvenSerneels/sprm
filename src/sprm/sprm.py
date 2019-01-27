@@ -36,19 +36,19 @@ Version 0.1.7: 1 bug removed (l. 437). Made consistent with new robcent function
 
 @author: Sven Serneels, Ponalytics
 """
-import numpy as np
-import pandas as ps
-from scipy.stats import norm, chi2
+
+from __future__ import absolute_import, division, print_function
+from __future__ import unicode_literals
 from sklearn.base import RegressorMixin,BaseEstimator,TransformerMixin
 from sklearn.utils.metaestimators import _BaseComposition
-# from .robcent import robcent
-import copy
-import matplotlib.pyplot as pp
+import matplotlib.pyplot as pp 
 from sklearn.model_selection import GridSearchCV
-
-class MyException(Exception):
-        pass
-
+import pandas as ps
+from scipy.stats import norm, chi2
+import copy
+import numpy as np
+from . import robcent
+from ._m_support_functions import *
 
 
 class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
@@ -146,7 +146,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             B = np.empty((p,1))
             B.fill(0)
             R = B
-            T = np.empty((n,n_components))
+            T = np.empty((n,self.n_components))
             T.fill(0)
         yp = np.array(X0 * B + my).astype("float64")
         setattr(self,"x_weights_",W)

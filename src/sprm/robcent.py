@@ -43,14 +43,15 @@ trimmed versions.
 @author: Sven Serneels, Ponalytics
 """
 
+from __future__ import absolute_import, division, print_function
+from __future__ import unicode_literals
+
+from sklearn.base import BaseEstimator
+from sklearn.utils.metaestimators import _BaseComposition
 import numpy as np
 import scipy.stats as sps
 from statsmodels import robust as srs
-from sklearn.base import BaseEstimator
-from sklearn.utils.metaestimators import _BaseComposition
-
-class MyException(Exception):
-        pass
+from ._m_support_functions import MyException
 
 class robcent(_BaseComposition,BaseEstimator):
     
