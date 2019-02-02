@@ -2,19 +2,7 @@
 Sparse partial robust M regression
 ==================================
 
-Pyhton code for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
-
-Version 0.2
------------
-Version 0.2 is out!! 
-Changes compared to version 0.1: 
-- All functionalities can now be loaded in modular way, e.g. to use plotting functions, now source the plot function separately:
-        
-        from sprm import sprm_plot 
-        
-- The package now includes a robust M regression estimator (rm.py), which is a multiple regression only variant of sprm. 
-  It is based on the same iterative re-weighting scheme, buit does not perform dimension reduction, nor variable selection.
-- The robust preprocessing routine (robcent.py) has been re-written so as to be more consistent with sklearn. 
+A scikit-learn compatible Python package for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
 
 
 Description
@@ -163,7 +151,7 @@ outputs. Therefore, dimension reduction outputs like x_scores_, x_loadings_, etc
   Estimate and predict by RM: 
   
         from sprm import rm
-        res_rm = rm('Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
+        res_rm = rm('Hampel',.95,.975,.999,'median','mad','specific',True,100,.01,columns,True)
         res_rm.fit(X0[:2666],y0[:2666])
         res_rm.predict(X0[2666:])
         
@@ -288,6 +276,28 @@ References
 2. [Partial robust M regression](https://doi.org/10.1016/j.chemolab.2005.04.007), Sven Serneels, Christophe Croux, Peter Filzmoser, Pierre J. Van Espen, Chemometrics and Intelligent Laboratory Systems, 79 (2005), 55-64.
 3. [Sparse and robust PLS for binary classification](https://onlinelibrary.wiley.com/doi/abs/10.1002/cem.2775), I. Hoffmann, P. Filzmoser, S. Serneels, K. Varmuza, Journal of Chemometrics, 30 (2016), 153-162.
         
+
+Release notes
+=============
+
+Version 0.2.1
+-------------
+- sprm now takes both numeric (n,1) np matrices and (n,) np.arrays as input 
+
+
+Version 0.2.0
+-------------
+Version 0.2 is out!! 
+Changes compared to version 0.1: 
+- All functionalities can now be loaded in modular way, e.g. to use plotting functions, now source the plot function separately:
+        
+        from sprm import sprm_plot 
+        
+- The package now includes a robust M regression estimator (rm.py), which is a multiple regression only variant of sprm. 
+  It is based on the same iterative re-weighting scheme, buit does not perform dimension reduction, nor variable selection.
+- The robust preprocessing routine (robcent.py) has been re-written so as to be more consistent with sklearn.
+
+
 
 Work to do
 ----------
