@@ -88,6 +88,8 @@ class sprm_plot(ABLine2D,sprm):
         ax1 = fig.add_subplot(111)
         if (not(onlyval)):
             ytruec = self.res_sprm.y
+            if len(ytruec.shape) >1:
+                ytruec = np.array(ytruec).reshape(-1).astype('float64')
             ypredc = np.array(self.res_sprm.fitted_).T.reshape(-1)
             labelcr = label[0] + ' Training' + ' Regular'
             labelcm = label[0] + ' Training' + ' Moderate'
@@ -107,21 +109,24 @@ class sprm_plot(ABLine2D,sprm):
             if (len(Xn)==0):
                 ValueError('In onlyval=True mode, new cases Xn need to be provided')
         if not(len(Xn)==0):
+            if len(ytruev.shape) >1:
+                ytruev = np.array(ytruev).reshape(-1).astype('float64')
             ypredv = self.res_sprm.predict(Xn)
+            ypredv = np.array(ypredv).reshape(-1).astype('float64')
             wv = self.res_sprm.weightnewx(Xn)
             labelvr = label[0] + ' Test' + ' Regular'
             labelvm = label[0] + ' Test' + ' Moderate'
             labelvh = label[0] + ' Test' + ' Harsh'
-            reg_cases = np.where(wv == 1)
-            mod_outliers = np.where((wv > 0) & (wv < 1))
-            harsh_outliers = np.where(wv == 0)
-            if len(reg_cases[0]>0):
+            reg_cases = np.where(wv == 1)[0]
+            mod_outliers = np.where((wv > 0) & (wv < 1))[0]
+            harsh_outliers = np.where(wv == 0)[0]
+            if len(reg_cases>0):
                 ax1.scatter(ytruev[reg_cases],ypredv[reg_cases],c=self.colors[5],label=labelvr,
                         zorder=1,edgecolors=self.colors[4],marker=self.markers[0])
-            if len(mod_outliers[0]>0):
+            if len(mod_outliers>0):
                 ax1.scatter(ytruev[mod_outliers],ypredv[mod_outliers],c=self.colors[5],label=labelvm,
                         zorder=1,edgecolors=self.colors[4],marker=self.markers[1])
-            if len(harsh_outliers[0]>0):
+            if len(harsh_outliers>0):
                 ax1.scatter(ytruev[harsh_outliers],ypredv[harsh_outliers],c=self.colors[7],label=labelvh,
                         zorder=1,edgecolors=self.colors[4],marker=self.markers[2])
         ABLine2D(1,0,color=self.colors[3])

@@ -69,6 +69,11 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             self.y = y
         X = X.astype("float64")
         (n,p) = X.shape
+        ny = y.shape[0]
+        if ny != n:
+            raise(MyException("Number of cases in X and y needs to agree"))
+        if len(y.shape) >1:
+            y = np.array(y).reshape(-1)
         y = y.astype("float64")
         centring = robcent(center='mean',scale='None')
         X0= centring.fit(X)
@@ -252,6 +257,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         ny = y.shape[0]
         if ny != n:
             raise MyException("Number of cases in y and X must be identical.")
+        if len(y.shape) >1:
+            y = np.array(y).reshape(-1).astype('float64')
 
         scaling = robcent(center=self.centre, scale=self.scale)
         Xs = scaling.fit(X).astype('float64')
@@ -387,12 +394,13 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             print("Final Model: Variables retained for " + str(self.n_components) + " latent variables: \n" 
                  + str(res_snipls.colret_) + "\n")
         b_rescaled = np.reshape(sy/sX,(p,1))*b
+        yp_rescaled = np.array(X*b_rescaled).reshape(-1)
         if(self.centre == "mean"):
-            intercept = np.mean(y - np.matmul(X,b_rescaled))
+            intercept = np.mean(y - yp_rescaled)
         else:
-            intercept = np.median(np.reshape(y - np.matmul(X,b_rescaled),(-1)))
+            intercept = np.median(y - yp_rescaled)
         # This median calculation produces slightly different result in R and Py
-        yfit = np.matmul(X,b_rescaled) + intercept   
+        yfit = yp_rescaled + intercept    
         if (self.scale!="None"):
             if (self.centre == "mean"):
                 b0 = np.mean(ys.astype("float64") - np.matmul(Xs.astype("float64"),b))
