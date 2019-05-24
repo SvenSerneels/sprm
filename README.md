@@ -1,8 +1,7 @@
-# sprm package documentation 
 Sparse partial robust M regression
 ==================================
 
-A scikit-learn compatible Python package for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
+A scikit-learn compatible Python 3 package for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
 
 
 Description
