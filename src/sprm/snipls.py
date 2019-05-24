@@ -12,8 +12,8 @@ from sklearn.base import RegressorMixin,BaseEstimator,TransformerMixin
 from sklearn.utils.metaestimators import _BaseComposition
 import copy
 import numpy as np
-#from . import robcent
-#from ._m_support_functions import MyException
+from . import robcent
+from ._m_support_functions import MyException
 
 class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     """
@@ -56,6 +56,8 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         else:
             X0 = X
             y0 = y
+        self.X = X0
+        self.y = y0
         X0 = X0.astype("float64")
         (n,p) = X0.shape
         ny = y0.shape[0]
@@ -159,7 +161,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
-        return(np.matmul(Xn,self.coef_[:,self.n_components]) + self.intercept_)
+        return(np.matmul(Xn,self.coef_) + self.intercept_)
         
     def transform(self,Xn):
         (n,p) = Xn.shape

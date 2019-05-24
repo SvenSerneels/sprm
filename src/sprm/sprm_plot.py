@@ -29,13 +29,13 @@ from __future__ import unicode_literals
 
 from . import sprm 
 from ._m_support_functions import MyException
-from ._plot_internals import ABLine2D, cv_score_table
+from ._plot_internals import cv_score_table
 
 import matplotlib.pyplot as pp 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 
-class sprm_plot(ABLine2D,sprm):
+class sprm_plot(sprm):
     
     def __init__(self,res_sprm,colors,markers=['o','d','v'],*args):
         """
@@ -129,7 +129,8 @@ class sprm_plot(ABLine2D,sprm):
             if len(harsh_outliers>0):
                 ax1.scatter(ytruev[harsh_outliers],ypredv[harsh_outliers],c=self.colors[7],label=labelvh,
                         zorder=1,edgecolors=self.colors[4],marker=self.markers[2])
-        ABLine2D(1,0,color=self.colors[3])
+        x_abline = np.array(ax1.get_xbound())
+        ax1.add_line(pp.Line2D(x_abline,x_abline,color=self.colors[3]))
         if len(label)==0:
             ax1.legend_.remove()
         else:
@@ -167,7 +168,7 @@ class sprm_plot(ABLine2D,sprm):
         else:
             x_plot = np.arange(0,p)
        
-        b_orig = getattr(self.res_sprm,entity).reshape(-1)
+        b_orig = np.array(getattr(self.res_sprm,entity)).reshape(-1)
         if truncation > 0:
             ind_sort = np.argsort(np.argsort(b_orig))
             b_sort = np.sort(b_orig)

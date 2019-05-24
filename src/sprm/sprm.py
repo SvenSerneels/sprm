@@ -28,9 +28,9 @@ from scipy.stats import norm, chi2
 import copy
 import numpy as np
 import warnings
-#from . import robcent
-#from . import snipls
-#from ._m_support_functions import *
+from . import robcent
+from . import snipls
+from ._m_support_functions import *
 
 class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
