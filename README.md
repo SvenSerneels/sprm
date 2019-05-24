@@ -162,7 +162,7 @@ outputs. Therefore, dimension reduction outputs like x_scores_, x_loadings_, etc
 The Sparse NIPALS (SNIPLS) estimator
 ====================================
 
-SNIPLS is the non-robust sparse univariate PLS algorithm. SNIPLS has been implemented to be consistent with SPRM. It takes the same arguments, except for 'fun' and 'probp1' through 'probp3', since these are robustness parameters. For the same reasons, the outputs are limited to sparse dimension reduction and regression outputs. Robustness related outputs like x_caseweights_ cannot be provided.
+SNIPLS is the non-robust sparse univariate PLS algorithm \[3\]. SNIPLS has been implemented to be consistent with SPRM. It takes the same arguments, except for 'fun' and 'probp1' through 'probp3', since these are robustness parameters. For the same reasons, the outputs are limited to sparse dimension reduction and regression outputs. Robustness related outputs like x_caseweights_ cannot be provided.
         
   Estimate and predict by SNIPLS: 
   
