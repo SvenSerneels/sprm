@@ -9,14 +9,13 @@ Module containing:
     Estimators
     ----------
     Sparse Partial Robust M Regression (SPRM)
-    Sparse NIPALS (SNIPLS) 
     
     0.2: Ancillary functions moved to ._m_support_functions
          Plotting functions moved to .sprm_plot
+    0.3: Sparse NIPALS (SNIPLS) estimator moved to .snipls.
 
-Depends on robcent class for robustly centering and scaling data 
-
-Version 0.1.7: 1 bug removed (l. 437). Made consistent with new robcent function.
+Depends on robcent class for robustly centering and scaling data and on snipls 
+class
 
 @author: Sven Serneels, Ponalytics
 """
@@ -28,135 +27,10 @@ from sklearn.utils.metaestimators import _BaseComposition
 from scipy.stats import norm, chi2
 import copy
 import numpy as np
-from . import robcent
-from ._m_support_functions import *
-
-
-class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
-    """
-    SNIPLS Sparse Nipals Algorithm 
-    
-    Algorithm first outlined in: 
-        Sparse and robust PLS for binary classification, 
-        I. Hoffmann, P. Filzmoser, S. Serneels, K. Varmuza, 
-        Journal of Chemometrics, 30 (2016), 153-162.
-    
-    Parameters:
-    -----------
-    eta: float. Sparsity parameter in [0,1)
-    n_components: int, min 1. Note that if applied on data, n_components shall 
-        take a value <= min(x_data.shape)
-    verbose: Boolean (def true): to print intermediate set of columns retained
-    colums (def false): Either boolean or list
-        if False, no column names supplied 
-        if a list (will only take length x_data.shape[1]), the column names of 
-            the x_data supplied in this list, will be printed in verbose mode
-    copy (def True): boolean, whether to copy data
-    Note: copy not yet aligned with sklearn def  - we always copy    
-    
-    """
-    
-    def __init__(self,eta=.5,n_components=1,verbose=True,columns=False,copy=True):
-        self.eta = eta 
-        self.n_components = n_components
-        self.verbose = verbose
-        self.columns = columns
-        self.copy = copy
-
-    def fit(self,X,y):
-        if self.copy:
-            self.X = X
-            self.y = y
-        X = X.astype("float64")
-        (n,p) = X.shape
-        ny = y.shape[0]
-        if ny != n:
-            raise(MyException("Number of cases in X and y needs to agree"))
-        if len(y.shape) >1:
-            y = np.array(y).reshape(-1)
-        y = y.astype("float64")
-        centring = robcent(center='mean',scale='None')
-        X0= centring.fit(X)
-        mX = centring.col_loc_
-        my = np.mean(y)
-        y0 = y - my
-        T = np.empty((n,self.n_components),float) 
-        W = np.empty((p,self.n_components),float)  
-        P = np.empty((p,self.n_components),float)
-        C = np.empty((self.n_components,1),float) 
-        Xev = np.empty((self.n_components,1),float)
-        yev = np.empty((self.n_components,1),float)
-        B = np.empty((p,1),float) 
-        oldgoodies = np.array([])
-        Xi = X0
-        yi = np.matrix(y0).T
-        for i in range(1,self.n_components+1):
-            wh =  Xi.T * yi
-            wh = wh/np.linalg.norm(wh,"fro")
-            # goodies = abs(wh)-llambda/2 lambda definition
-            goodies = abs(wh)-self.eta*max(abs(wh))
-            wh = np.multiply(goodies,np.sign(wh))
-            goodies = np.where((goodies>0))[0]
-            goodies = np.union1d(oldgoodies,goodies)
-            oldgoodies = goodies
-            if len(goodies)==0:
-                print("No variables retained at" + str(i) + "latent variables" +
-                      "and lambda = " + str(self.eta) + ", try lower lambda")
-                break
-            elimvars = np.setdiff1d(range(0,p),goodies)
-            wh[elimvars] = 0 
-            th = Xi * wh
-            nth = np.linalg.norm(th,"fro")
-            ch = (yi.T * th)/(nth**2)
-            ph = (Xi.T * Xi * wh)/(nth**2)
-            ph[elimvars] = 0 
-            yi = yi - th*ch 
-            W[:,i-1] = np.reshape(wh,p)
-            P[:,i-1] = np.reshape(ph,p)
-            C[i-1] = ch 
-            T[:,i-1] = np.reshape(th,n)
-            Xi = Xi - th * ph.T
-            Xev[i-1] = (nth**2*np.linalg.norm(ph,"fro")**2)/np.sum(np.square(X0))*100
-            yev[i-1] = np.sum(nth**2*(ch**2))/np.sum(y0**2)*100
-            if type(self.columns)==bool:
-                colret = goodies
-            else:
-                colret = self.columns[np.setdiff1d(range(0,p),elimvars)]
-            if(self.verbose):
-                print("Variables retained for " + str(i) + " latent variable(s):" +
-                      "\n" + str(colret) + ".\n")
-        if(len(goodies)>0):
-            R = np.matmul(W[:,range(0,i)] , np.linalg.inv(np.matmul(P[:,range(0,i)].T,W[:,range(0,i)])))
-            B = np.matmul(R,C[range(0,i)])
-        else:
-            B = np.empty((p,1))
-            B.fill(0)
-            R = B
-            T = np.empty((n,self.n_components))
-            T.fill(0)
-        yp = np.array(X0 * B + my).astype("float64")
-        setattr(self,"x_weights_",W)
-        setattr(self,"x_loadings_",P)
-        setattr(self,"C_",C)
-        setattr(self,"x_scores_",T)
-        setattr(self,"coef_",B)
-        setattr(self,"intercept_",np.mean(y0 - np.matmul(X0,B)))
-        setattr(self,"x_ev_",Xev)
-        setattr(self,"y_ev_",yev)
-        setattr(self,"fitted_",yp.reshape(-1))
-        setattr(self,"x_Rweights_",R)
-        setattr(self,"colret_",colret)
-        setattr(self,"x_loc_",mX)
-        setattr(self,"y_loc_",my)
-        setattr(self,"centring_",centring)
-        return(self)
-        
-    
-    def predict(self,Xn):
-        Xnc = self.centring.scale_data(Xn,self.x_loc_,self.x_sca_)
-        return(np.matmul(Xnc,self.coef_) + self.y_loc_)
-
-
+import warnings
+#from . import robcent
+#from . import snipls
+#from ._m_support_functions import *
 
 class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
@@ -195,7 +69,9 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         'pcapp' will include a PCA/broken stick projection to 
                 calculate the staring weights, else just based on X;
         any other value will calculate the X starting values based on the X
-                matrix itself. This is less stable for very flat data (p >> n).   
+                matrix itself. This is less stable for very flat data (p >> n), 
+                yet yields identical results to the SPRM R implementation 
+                available from CRAN.   
     colums (def false): Either boolean or list
         if False, no column names supplied 
         if a list (will only take length x_data.shape[1]), the column names of 
@@ -230,6 +106,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.hampelby__ = 'irrelevant'
         self.hampelrx_ = 'irrelevant'
         self.hampelry_ = 'irrelevant'
+        self.zero_scale_vars_ = None
     
 
     def fit(self,X,y):
@@ -267,6 +144,18 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         ys = scaling.fit(y).astype('float64')
         my = scaling.col_loc_
         sy = scaling.col_sca_
+        
+        zero_scale = np.where(sX < 1e-5)[0]
+        if len(zero_scale) > 0:
+            warnings.warn('Zero scale variables with indices ' + str(zero_scale) + ' detected and removed')
+            self.zero_scale_vars_ = zero_scale
+            vars_to_keep = np.setdiff1d(np.arange(0,p),zero_scale)
+            Xs = Xs[:,vars_to_keep]
+            X = X[:,vars_to_keep]
+            sX = sX[vars_to_keep]
+            if self.columns != False:
+                self.columns = self.columns[vars_to_keep]
+            p -= 1
 
         if (self.start_X_init=='pcapp'):
             U, S, V = np.linalg.svd(Xs)
@@ -323,7 +212,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         difference = 1
         # Begin at iteration
         res_snipls = snipls(self.eta,self.n_components,
-                            self.verbose,self.columns,self.copy)
+                            self.verbose,self.columns,'mean','None',
+                            self.copy)
         while ((difference > self.tol) & (loops < self.maxit)):
             res_snipls.fit(Xw,yw)
             T = np.divide(res_snipls.x_scores_,WEmat[:,0:(self.n_components)])
@@ -355,7 +245,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 self.hampelrx_ = chi2.ppf(self.probp3,self.n_components)
                 wte = Hampel(wtn,self.probctx_,self.hampelbx_,self.hampelrx_)
                 wye = Hampel(wye,self.probcty_,self.hampelby_,self.hampelry_)
-            b2sum = np.sum(b**2)    
+            b2sum = np.sum(np.power(b,2))    
             difference = abs(b2sum - rold)/rold
             rold = b2sum
             wte = np.array(wte).reshape(-1)
@@ -393,7 +283,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if self.verbose:
             print("Final Model: Variables retained for " + str(self.n_components) + " latent variables: \n" 
                  + str(res_snipls.colret_) + "\n")
-        b_rescaled = np.reshape(sy/sX,(p,1))*b
+        b_rescaled = np.multiply(np.reshape(sy/sX,(p,1)),b)
         yp_rescaled = np.array(X*b_rescaled).reshape(-1)
         if(self.centre == "mean"):
             intercept = np.mean(y - yp_rescaled)
@@ -445,20 +335,20 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     def predict(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
-            ValueError('New data must have seame number of columns as the ones the model has been trained with')
+            raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         return(np.matmul(Xn,self.coef_) + self.intercept_)
         
     def transform(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
-            ValueError('New data must have seame number of columns as the ones the model has been trained with')
+            raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         Xnc = self.scaling.scale_data(Xn,self.x_loc_,self.x_sca_)
         return(Xnc*self.x_Rweights_)
         
     def weightnewx(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
-            ValueError('New data must have seame number of columns as the ones the model has been trained with')
+            raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         Tn = self.transform(Xn)
         scaling = self.scaling
         scalet = self.scale
@@ -484,7 +374,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         elif scoring=='normal':
             return(RegressorMixin.score(self,Xn,yn))
         else:
-            ValueError('Scoring flag must be set to "weighted" or "normal".')
+            raise(ValueError('Scoring flag must be set to "weighted" or "normal".'))
 
         
         

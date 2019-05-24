@@ -59,7 +59,7 @@ class sprm_plot(ABLine2D,sprm):
         
         """
         if not(isinstance(res_sprm,sprm)):
-            raise(MyException("Object supplied to sprmplot need to be sprm object"))
+            raise(MyException("Object supplied to sprmplot needs to be an sprm object"))
         self.res_sprm = res_sprm
         self.colors = colors
         self.markers = markers

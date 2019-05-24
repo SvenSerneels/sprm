@@ -236,6 +236,6 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
     def predict(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
-            ValueError('New data must have seame number of columns as the ones the model has been trained with')
+            raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         return(np.matmul(Xn,self.coef_) + self.intercept_)
         
