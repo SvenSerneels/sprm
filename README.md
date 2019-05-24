@@ -304,7 +304,6 @@ Version 0.2.1
 
 Version 0.2.0
 -------------
-Version 0.2 is out!! 
 Changes compared to version 0.1: 
 - All functionalities can now be loaded in modular way, e.g. to use plotting functions, now source the plot function separately:
         
@@ -314,11 +313,19 @@ Changes compared to version 0.1:
   It is based on the same iterative re-weighting scheme, buit does not perform dimension reduction, nor variable selection.
 - The robust preprocessing routine (robcent.py) has been re-written so as to be more consistent with sklearn.
 
+Version 0.3
+-----------
+All three estimators provided as separate classes in module:
 
+        from sprm import sprm 
+        from sprm import snipls
+        from sprm import rm
+        
+Plus some minor changes to make it consistent with the latest numpy and matplotlib versions. 
 
 Work to do
 ----------
 - optimize alignment to sklearn
 - optimize for speed 
-- extend to multivariate responses
+- extend to multivariate responses (open research topic !)
 - suggestions always welcome 
