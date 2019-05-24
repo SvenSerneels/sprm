@@ -13,13 +13,16 @@ The method performs four tasks at the same time in a single, consistent estimate
 - *dimension reduction*: calculates interpretable PLS-like components maximizing covariance to the predictand in a robust way 
 - *variable selection*: depending on the paramter settings, can yield highly sparse regression coefficients that contain exact zero elements 
 - *outlier detection and compensation*: yields a set of case weights in \[0,1\]. The lower the weight, the more outlying a case is. The estimate itself is outlier robust. 
+
+Note: all the methods contained in this package have been designed for continuous data. They do not work correctly for caetgorical or textual data. 
         
 The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
 
 The repository contains
 - The estimator (sprm.py) 
 - Plotting functionality based on Matplotlib (sprm_plot.py)
-- Robust data pre-processing (robcent.py) 
+- Robust data pre-processing (robcent.py)
+- The Sparse NIPALS (SNIPLS) estimator (snipls.py)
 - Robust M regression estimator (rm.py)
 - Ancillary functions for plotting (_plot_internals.py)
 - Ancillary functions for M-estimation (_m_support_functions.py)
@@ -29,6 +32,7 @@ How to install
 The package is distributed through PyPI, so install through: 
         
         pip install sprm 
+    
 
 The SPRM estimator
 ==================
@@ -155,6 +159,19 @@ outputs. Therefore, dimension reduction outputs like x_scores_, x_loadings_, etc
         res_rm.fit(X0[:2666],y0[:2666])
         res_rm.predict(X0[2666:])
         
+The Sparse NIPALS (SNIPLS) estimator
+====================================
+
+SNIPLS is the non-robust sparse univariate PLS algorithm \[3\]. SNIPLS has been implemented to be consistent with SPRM. It takes the same arguments, except for 'fun' and 'probp1' through 'probp3', since these are robustness parameters. For the same reasons, the outputs are limited to sparse dimension reduction and regression outputs. Robustness related outputs like x_caseweights_ cannot be provided.
+        
+  Estimate and predict by SNIPLS: 
+  
+        from sprm import snipls
+        res_snipls = snipls(n_components=4, eta=.5)
+        res_snipls.fit(X0[:2666],y0[:2666])
+        res_snipls.predict(X0[2666:])
+        
+        
  
 Plotting functionality
 ======================
@@ -221,14 +238,14 @@ Example (continued)
         res_sprm_plot.plot_coeffs(title="All AIG SPRM scaled b")
         res_sprm_plot.plot_coeffs(truncation=.05,columns=columns,title="5% smallest and largest AIG sprm b")
         
-  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/blob/master/AIG_b.png "AIG SPRM regression coefficients")
+  ![AIG sprm regression coefficients](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_b.png "AIG SPRM regression coefficients")
 
 - plot y vs y predicted, training cases only: 
 
         res_sprm_plot.plot_yyp(label=label,title="AIG SPRM y vs. y predicted")
         res_sprm_plot.plot_yyp(label=label,names=names,title="AIG SPRM y vs. y predicted")
 
-  ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
+  ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_yyp_train.png "AIG SPRM y vs y predicted, training set")
   
 - plot y vs y predicted, including test cases
   
@@ -236,7 +253,7 @@ Example (continued)
                 y predicted")            
         res_sprm_plot.plot_yyp(ytruev=y0[2667:],Xn=X0[2667:],label=label,title="AIG SPRM y vs. y predicted")
         
-   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
+   ![AIG sprm y vs y predicted, taining set](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_yyp_train_test.png "AIG SPRM y vs y predicted")
 
 - plot y vs y predicted, only test set cases: 
 
@@ -249,7 +266,7 @@ Example (continued)
         res_sprm_plot.plot_projections(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM score space, components 1 and 2",onlyval=True)
         
   
-   ![AIG sprm score space](https://github.com/SvenSerneels/sprm/blob/master/AIG_T12.png "AIG SPRM score space")
+   ![AIG sprm score space](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_T12.png "AIG SPRM score space")
 
 - plot caseweights, options as above, with the second one shown here:
 
@@ -257,7 +274,7 @@ Example (continued)
         res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,title="AIG SPRM caseweights")
         res_sprm_plot.plot_caseweights(Xn=X0[2667:],label=label,namesv=namesv,title="AIG SPRM caseweights",onlyval=True)  
         
-   ![AIG sprm caseweights](https://github.com/SvenSerneels/sprm/blob/master/AIG_caseweights.png "AIG SPRM caseweights")
+   ![AIG sprm caseweights](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_caseweights.png "AIG SPRM caseweights")
    
 
 - plot cross-validation results: 
@@ -267,7 +284,7 @@ Example (continued)
         res_sprm_plot_cv.eta_ncomp_contour()
         res_sprm_plot_cv.cv_score_table_
         
-  ![AIG sprm CV results](https://github.com/SvenSerneels/sprm/blob/master/AIG_CV.png "AIG SPRM CV results")
+  ![AIG sprm CV results](https://github.com/SvenSerneels/sprm/blob/master/img/AIG_CV.png "AIG SPRM CV results")
   
         
 References
@@ -287,7 +304,6 @@ Version 0.2.1
 
 Version 0.2.0
 -------------
-Version 0.2 is out!! 
 Changes compared to version 0.1: 
 - All functionalities can now be loaded in modular way, e.g. to use plotting functions, now source the plot function separately:
         
@@ -297,12 +313,19 @@ Changes compared to version 0.1:
   It is based on the same iterative re-weighting scheme, buit does not perform dimension reduction, nor variable selection.
 - The robust preprocessing routine (robcent.py) has been re-written so as to be more consistent with sklearn.
 
+Version 0.3
+-----------
+All three estimators provided as separate classes in module:
 
+        from sprm import sprm 
+        from sprm import snipls
+        from sprm import rm
+        
+Plus some minor changes to make it consistent with the latest numpy and matplotlib versions. 
 
 Work to do
 ----------
 - optimize alignment to sklearn
 - optimize for speed 
-- subclass snipls assumes location centring. Coud be written more generally like rm or sprm.
-- allow matrix valued y in sprm. 
+- extend to multivariate responses (open research topic !)
 - suggestions always welcome 
