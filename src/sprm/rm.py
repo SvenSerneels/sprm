@@ -209,7 +209,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
             else:
                 b0 = np.median(np.array(ys.astype("float64") - np.matmul(Xs.astype("float64"),b)))
         else:
-            if (self.centring == "mean"):
+            if (self.centre == "mean"):
                 ytil = np.array(np.matmul(X,b)).reshape(-1)
                 intercept = np.mean(y - ytil)
             else:
