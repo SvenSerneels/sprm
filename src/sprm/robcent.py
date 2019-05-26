@@ -114,7 +114,7 @@ class robcent(_BaseComposition,BaseEstimator):
         """
         
         if trimming==0:
-            s = np.std(X,axis=0)
+            s = np.power(np.var(X,axis=0),.5)
             s = np.array(s).reshape(-1)
         else: 
             var = sps.trim_mean(np.square(X - sps.trim_mean(X,trimming,0)),
