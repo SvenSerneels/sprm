@@ -214,6 +214,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
                 intercept = np.mean(y - ytil)
             else:
                 intercept = np.median(y - ytil)
+            b0 = intercept
         r = y - yfit
         setattr(self,"coef_",b_rescaled)
         setattr(self,"intercept_",intercept)
