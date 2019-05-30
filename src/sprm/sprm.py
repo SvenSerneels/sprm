@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jan 26 13:56:12 2018
-Version 2.0: updated Jan 27, 2019.
 
 Module containing:
     
@@ -155,7 +154,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             sX = sX[vars_to_keep]
             if self.columns != False:
                 self.columns = self.columns[vars_to_keep]
-            p -= 1
+            p -= len(vars_to_keep)
 
         if (self.start_X_init=='pcapp'):
             U, S, V = np.linalg.svd(Xs)
