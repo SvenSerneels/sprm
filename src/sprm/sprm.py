@@ -27,8 +27,8 @@ from scipy.stats import norm, chi2
 import copy
 import numpy as np
 import warnings
-from . import robcent
-from . import snipls
+from .robcent import robcent
+from .snipls import snipls
 from ._m_support_functions import *
 
 class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
@@ -146,15 +146,20 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         
         zero_scale = np.where(sX < 1e-5)[0]
         if len(zero_scale) > 0:
-            warnings.warn('Zero scale variables with indices ' + str(zero_scale) + ' detected and removed')
+            if type(self.columns) != bool:
+                warntext = 'Zero scale variables with indices ' + str(self.columns[zero_scale]) + ' detected and removed'
+            else:
+                warntext = 'Zero scale variables with indices ' + str(zero_scale) + ' detected and removed'
+
+            warnings.warn(warntext)
             self.zero_scale_vars_ = zero_scale
             vars_to_keep = np.setdiff1d(np.arange(0,p),zero_scale)
             Xs = Xs[:,vars_to_keep]
             X = X[:,vars_to_keep]
             sX = sX[vars_to_keep]
-            if self.columns != False:
+            if type(self.columns) != bool:
                 self.columns = self.columns[vars_to_keep]
-            p -= len(vars_to_keep)
+            p = len(vars_to_keep)
 
         if (self.start_X_init=='pcapp'):
             U, S, V = np.linalg.svd(Xs)
