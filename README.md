@@ -89,6 +89,7 @@ Attributes
 -  y_loc_: y location estimate
 -  x_sca_: X block scale estimate
 -  y_sca_: y scale estimate
+-  non_zero_scale_vars_: indicator vector of variables in X with nonzero scale
 
 Methods
 --------
@@ -319,6 +320,10 @@ All three estimators provided as separate classes in module:
         from sprm import sprm 
         from sprm import snipls
         from sprm import rm
+        
+Also, sprm now includes a check for zero scales. It will remove zero scale variables from the input data, and only use 
+columns corresponding to nonzero predictor scales in new data. This check has not yet been built in for snipls or rm 
+separately. 
         
 Plus some minor changes to make it consistent with the latest numpy and matplotlib versions. 
 
