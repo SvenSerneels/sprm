@@ -161,10 +161,10 @@ class sprm_plot(sprm):
         fig.set_facecolor(self.colors[0])
         pp.rcParams['axes.facecolor'] = self.colors[1]
         ax1 = fig.add_subplot(111)
-        p = self.res_sprm.X.shape[1]
+        p = len(self.res_sprm.non_zero_scale_vars_)
         if len(columns) > 0:
-            x_plot = columns
-            x_labels = columns
+            x_plot = columns[self.res_sprm.non_zero_scale_vars_]
+            x_labels = columns[self.res_sprm.non_zero_scale_vars_]
         else:
             x_plot = np.arange(0,p)
        

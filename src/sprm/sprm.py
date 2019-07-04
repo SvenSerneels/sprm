@@ -105,7 +105,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.hampelby__ = 'irrelevant'
         self.hampelrx_ = 'irrelevant'
         self.hampelry_ = 'irrelevant'
-        self.zero_scale_vars_ = None
+        self.non_zero_scale_vars_ = None
     
 
     def fit(self,X,y):
@@ -143,8 +143,13 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         ys = scaling.fit(y).astype('float64')
         my = scaling.col_loc_
         sy = scaling.col_sca_
+        setattr(self,"x_loc_",mX)
+        setattr(self,"y_loc_",my)
+        setattr(self,"x_sca_",sX)
+        setattr(self,"y_sca_",sy)
         
         zero_scale = np.where(sX < 1e-5)[0]
+        vars_to_keep = np.arange(0,p)
         if len(zero_scale) > 0:
             if type(self.columns) != bool:
                 warntext = 'Zero scale variables with indices ' + str(self.columns[zero_scale]) + ' detected and removed'
@@ -152,7 +157,6 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 warntext = 'Zero scale variables with indices ' + str(zero_scale) + ' detected and removed'
 
             warnings.warn(warntext)
-            self.zero_scale_vars_ = zero_scale
             vars_to_keep = np.setdiff1d(np.arange(0,p),zero_scale)
             Xs = Xs[:,vars_to_keep]
             X = X[:,vars_to_keep]
@@ -160,6 +164,9 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             if type(self.columns) != bool:
                 self.columns = self.columns[vars_to_keep]
             p = len(vars_to_keep)
+        
+        self.non_zero_scale_vars_ = vars_to_keep
+
 
         if (self.start_X_init=='pcapp'):
             U, S, V = np.linalg.svd(Xs)
@@ -327,10 +334,6 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         setattr(self,"y_caseweights_",wye)
         setattr(self,"caseweights_",we)
         setattr(self,"colret_",res_snipls.colret_)
-        setattr(self,"x_loc_",mX)
-        setattr(self,"y_loc_",my)
-        setattr(self,"x_sca_",sX)
-        setattr(self,"y_sca_",sy)
         setattr(self,'scaling',scaling)
         return(self)
         pass
@@ -340,13 +343,15 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
+        Xn = Xn[:,self.non_zero_scale_vars_]
         return(np.matmul(Xn,self.coef_) + self.intercept_)
         
     def transform(self,Xn):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
-        Xnc = self.scaling.scale_data(Xn,self.x_loc_,self.x_sca_)
+        Xn = Xn[:,self.non_zero_scale_vars_]
+        Xnc = self.scaling.scale_data(Xn,self.x_loc_[self.non_zero_scale_vars_],self.x_sca_[self.non_zero_scale_vars_])
         return(Xnc*self.x_Rweights_)
         
     def weightnewx(self,Xn):
@@ -373,6 +378,9 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         return(wtn)
         
     def valscore(self,Xn,yn,scoring):
+        (n,p) = Xn.shape
+        if p!= self.X.shape[1]:
+            raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         if scoring=='weighted':
             return(RegressorMixin.score(self,Xn,yn,sample_weight=self.caseweights_))
         elif scoring=='normal':
