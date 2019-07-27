@@ -71,9 +71,9 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 matrix itself. This is less stable for very flat data (p >> n), 
                 yet yields identical results to the SPRM R implementation 
                 available from CRAN.   
-    colums (def false): Either boolean or list
+    columns (def false): Either boolean or pandas Index
         if False, no column names supplied 
-        if a list (will only take length x_data.shape[1]), the column names of 
+        if an Index (will only take length x_data.shape[1]), the column names of 
             the x_data supplied in this list, will be printed in verbose mode
     copy (def True): boolean, whether to copy data
         Note: copy not yet aligned with sklearn def  

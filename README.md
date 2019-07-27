@@ -18,13 +18,13 @@ Note: all the methods contained in this package have been designed for continuou
 The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
 
 The repository contains
-- The estimator (sprm.py) 
-- Plotting functionality based on Matplotlib (sprm_plot.py)
-- Robust data pre-processing (robcent.py)
-- The Sparse NIPALS (SNIPLS) estimator (snipls.py)
-- Robust M regression estimator (rm.py)
-- Ancillary functions for plotting (_plot_internals.py)
-- Ancillary functions for M-estimation (_m_support_functions.py)
+- The estimator (`sprm.py`) 
+- Plotting functionality based on Matplotlib (`sprm_plot.py`)
+- Robust data pre-processing (`robcent.py`)
+- The Sparse NIPALS (SNIPLS) estimator (`snipls.py`)
+- Robust M regression estimator (`rm.py`)
+- Ancillary functions for plotting (`_plot_internals.py`)
+- Ancillary functions for M-estimation (`_m_support_functions.py`)
 
 How to install
 --------------
@@ -40,75 +40,75 @@ The main SPRM implementation yields a class with the following structure:
 
 Dependencies
 ------------
-- From <sklearn.base>: BaseEstimator,TransformerMixin,RegressorMixin
-- From <sklearn.utils>: _BaseComposition
-- copy
-- From <scipy.stats>: norm,chi2
-- numpy 
-- From <matplotlib>: pyplot. 
-- From <statsmodels>: robust. 
+- From `<sklearn.base>`: `BaseEstimator, TransformerMixin, RegressorMixin`
+- From `<sklearn.utils>`: `_BaseComposition`
+- `copy`
+- From `<scipy.stats>`: `norm, chi2`
+- `numpy` 
+- From `<matplotlib>`: `pyplot`. 
+- From `<statsmodels>`: `robust`. 
 
 Parameters
 ----------
-- eta: float. Sparsity parameter in \[0,1). Note that eta=0 returns the non-sparse, yet robust, partial robust M-regression (PRM) \[2\]. 
-- n_components: int > 1. Note that if applied on data, n_components shall take a value <= min(x_data.shape)
-- fun: str, downweighting function. 'Hampel' (recommended), 'Fair' or 'Huber'
-- probp1: float, probability cutoff for start of downweighting (e.g. 0.95)
-- probp2: float, probability cutoff for start of steep downweighting (e.g. 0.975, only relevant if fun='Hampel')
-- probp3: float, probability cutoff for start of outlier omission (e.g. 0.999, only relevant if fun='Hampel')
-- centring: str, type of centring ('mean' or 'median', the latter recommended)
-- scaling: str, type of scaling ('std','mad', the latter recommended, or 'None')
-- verbose: boolean, specifying verbose mode
-- maxit: int, maximal number of iterations in M algorithm
-- tol: float, tolerance for convergence in M algorithm 
-- start_cutoff_mode: str, value 'specific' will set starting value cutoffs specific to X and y (preferred); any other value will set X and y stating cutoffs identically. The non-specific setting yields identical results to the SPRM R implementation available from [CRAN](https://cran.r-project.org/web/packages/sprm/index.html).
-- start_X_init: str, values 'pcapp' will include a PCA/broken stick projection to calculate the initial predictor block caseweights; any other value will just calculate initial predictor block case weights based on Euclidian distances within that block. The is less stable for very flat data (p >> n). 
-- colums (def false): Either boolean or list. If False, no column names supplied. If a list (will only take length x_data.shape\[1\]), the column names of the x_data supplied in this list, will be printed in verbose mode
-- copy (def True): boolean, whether to create deep copy of the data in the calculation process 
+- `eta`: float. Sparsity parameter in \[0,1). Note that `eta=0` returns the non-sparse, yet robust, partial robust M-regression (PRM) \[2\]. 
+- `n_components`: int > 1. Note that if applied on data, `n_components` shall take a value <= min(x_data.shape)
+- `fun`: str, downweighting function. `'Hampel'` (recommended), `'Fair'` or `'Huber'`
+- `probp1`: float, probability cutoff for start of downweighting (e.g. 0.95)
+- `probp2`: float, probability cutoff for start of steep downweighting (e.g. 0.975, only relevant if `fun='Hampel'`)
+- `probp3`: float, probability cutoff for start of outlier omission (e.g. 0.999, only relevant if `fun='Hampel'`)
+- `centring`: str, type of centring (`'mean'` or `'median'`, the latter recommended)
+- `scaling`: str, type of scaling (`'std'`,`'mad'`, the latter recommended, or `'None'`)
+- `verbose`: boolean, specifying verbose mode
+- `maxit`: int, maximal number of iterations in M algorithm
+- `tol`: float, tolerance for convergence in M algorithm 
+- `start_cutoff_mode`: str, value `'specific'` will set starting value cutoffs specific to X and y (preferred); any other value will set X and y stating cutoffs identically. The non-specific setting yields identical results to the SPRM R implementation available from [CRAN](https://cran.r-project.org/web/packages/sprm/index.html).
+- `start_X_init`: str, values `'pcapp'` will include a PCA/broken stick projection to calculate the initial predictor block caseweights; any other value will just calculate initial predictor block case weights based on Euclidian distances within that block. The is less stable for very flat data (p >> n). 
+- `colums` (def `False`): Either boolean or a pandas Index. If `False`, no column names supplied. If an Index (will only take length `x_data.shape[1]`), the column names of the x_data supplied in this list, will be printed in verbose mode
+- `copy` (def `True`): boolean, whether to create deep copy of the data in the calculation process 
 
 Attributes
 ----------
--  x_weights_: X block PLS weighting vectors (usually denoted W)
--  x_loadings_: X block PLS loading vectors (usually denoted P)
--  C_: vector of inner relationship between response and latent variablesblock re
--  x_scores_: X block PLS score vectors (usually denoted T)
--  coef_: vector of regression coefficients 
--  intercept_: intercept
--  coef_scaled_: vector of scaled regression coeeficients (when scaling option used)
--  intercept_scaled_: scaled intercept
--  residuals_: vector of regression residuals
--  x_ev_: X block explained variance per component
--  y_ev_: y block explained variance 
--  fitted_: fitted response
--  x_Rweights_: X block SIMPLS style weighting vectors (usually denoted R)
--  x_caseweights_: X block case weights
--  y_caseweights_: y block case weights
--  caseweights_: combined case weights
--  colret_: names of variables retained in the sparse model
--  x_loc_: X block location estimate 
--  y_loc_: y location estimate
--  x_sca_: X block scale estimate
--  y_sca_: y scale estimate
--  non_zero_scale_vars_: indicator vector of variables in X with nonzero scale
+-  `x_weights_`: X block PLS weighting vectors (usually denoted W)
+-  `x_loadings_`: X block PLS loading vectors (usually denoted P)
+-  `C_`: vector of inner relationship between response and latent variablesblock re
+-  `x_scores_`: X block PLS score vectors (usually denoted T)
+-  `coef_`: vector of regression coefficients 
+-  `intercept_`: intercept
+-  `coef_scaled_`: vector of scaled regression coeeficients (when scaling option used)
+-  `intercept_scaled_`: scaled intercept
+-  `residuals_`: vector of regression residuals
+-  `x_ev_`: X block explained variance per component
+-  `y_ev_`: y block explained variance 
+-  `fitted_`: fitted response
+-  `x_Rweights_`: X block SIMPLS style weighting vectors (usually denoted R)
+-  `x_caseweights_`: X block case weights
+-  `y_caseweights_`: y block case weights
+-  `caseweights_`: combined case weights
+-  `colret_`: names of variables retained in the sparse model
+-  `x_loc_`: X block location estimate 
+-  `y_loc_`: y location estimate
+-  `x_sca_`: X block scale estimate
+-  `y_sca_`: y scale estimate
+-  `non_zero_scale_vars_`: indicator vector of variables in X with nonzero scale
 
 Methods
 --------
-- fit(X,y): fit model 
-- predict(X): make predictions based on fit 
-- transform(X): project X onto latent space 
-- weightnewx(X): calculate X case weights
-- getattr(): get list of attributes
-- setattr(\*\*kwargs): set individual attribute of sprm object 
-- valscore(X,y,scoring): option to use weighted scoring function in cross-validation if scoring=weighted 
+- `fit(X,y)`: fit model 
+- `predict(X)`: make predictions based on fit 
+- `transform(X)`: project X onto latent space 
+- `weightnewx(X)`: calculate X case weights
+- `getattr()`: get list of attributes
+- `setattr(**kwargs)`: set individual attribute of sprm object 
+- `valscore(X,y,scoring)`: option to use weighted scoring function in cross-validation if scoring=weighted 
 
 Ancillary functions 
 -------------------
-- snipls (class): sparse NIPALS regression (first described in: \[3\]) 
-- Hampel: Hampel weight function 
-- Huber: Huber weight function 
-- Fair: Fair weight function 
-- brokenstick: broken stick rule to estimate number of relevant principal components  
-- robcent (class): robust centring and scaling 
+- `snipls` (class): sparse NIPALS regression (first described in: \[3\]) 
+- `Hampel`: Hampel weight function 
+- `Huber`: Huber weight function 
+- `Fair`: Fair weight function 
+- `brokenstick`: broken stick rule to estimate number of relevant principal components  
+- `robcent` (class): robust centring and scaling 
 
 Example
 -------
@@ -148,9 +148,9 @@ To run a toy example:
 The Robust M (RM) estimator
 ===========================
 
-RM has been implemented to be consistent with SPRM. It takes the same arguments, except for 'eta' and 'n_components', 
+RM has been implemented to be consistent with SPRM. It takes the same arguments, except for `eta` and `n_components`, 
 because it does not perform dimension reduction nor variable selection. For the same reasons, the outputs are limited to regression
-outputs. Therefore, dimension reduction outputs like x_scores_, x_loadings_, etc. are not provided. 
+outputs. Therefore, dimension reduction outputs like `x_scores_`, `x_loadings_`, etc. are not provided. 
         
   Estimate and predict by RM: 
   
@@ -176,7 +176,7 @@ SNIPLS is the non-robust sparse univariate PLS algorithm \[3\]. SNIPLS has been 
 Plotting functionality
 ======================
 
-The file sprm_plot.py contains a set of plot functions based on Matplotlib. The class sprm_plot contains plots for sprm objects, wheras the class sprm_plot_cv contains a plot for cross-validation. 
+The file `sprm_plot.py` contains a set of plot functions based on Matplotlib. The class sprm_plot contains plots for sprm objects, wheras the class sprm_plot_cv contains a plot for cross-validation. 
 
 Dependencies
 ------------
@@ -187,8 +187,8 @@ Dependencies
 
 Paramaters
 ----------
-- res_sprm, sprm. An sprm class object that has been fit.  
-- colors, list of str entries. Only mandatory input. Elements determine colors as: 
+- `res_sprm`, sprm. An sprm class object that has been fit.  
+- `colors`, list of str entries. Only mandatory input. Elements determine colors as: 
     - \[0\]: borders of pane 
     - \[1\]: plot background
     - \[2\]: marker fill
@@ -197,7 +197,7 @@ Paramaters
     - \[5\]: marker color for new cases, if applicable
     - \[6\]: marker color for harsh calibration outliers
     - \[7\]: marker color for harsh prediction outliers
-- markers, a list of str entries. Elements determkine markers for: 
+- `markers`, a list of str entries. Elements determkine markers for: 
     - \[0\]: regular cases 
     - \[1\]: moderate outliers 
     - \[2\]: harsh outliers 
@@ -215,7 +215,7 @@ The latter 3 methods will work both for cases that the models has been trained w
 
 Ancillary classes
 ------------------ 
-- sprm_plot_cv has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
+- `sprm_plot_cv` has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
 - ABline2D plots the first diagonal in y vs y predicted plots. 
 
 Example (continued) 

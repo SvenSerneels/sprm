@@ -30,9 +30,9 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     n_components: int, min 1. Note that if applied on data, n_components shall 
         take a value <= min(x_data.shape)
     verbose: Boolean (def true): to print intermediate set of columns retained
-    colums (def false): Either boolean or list
+    columns (def false): Either boolean or pandas Index
         if False, no column names supplied 
-        if a list (will only take length x_data.shape[1]), the column names of 
+        if an Index (will only take length x_data.shape[1]), the column names of 
             the x_data supplied in this list, will be printed in verbose mode
     copy (def True): boolean, whether to copy data
     Note: copy not yet aligned with sklearn def  - we always copy    
@@ -58,7 +58,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             y0 = y
         self.X = X0
         self.y = y0
-        X0 = X0.astype("float64")
+        X0 = np.matrix(X0).astype("float64")
         (n,p) = X0.shape
         ny = y0.shape[0]
         if ny != n:
