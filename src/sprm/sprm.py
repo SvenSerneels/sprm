@@ -26,6 +26,7 @@ from sklearn.utils.metaestimators import _BaseComposition
 from scipy.stats import norm, chi2
 import copy
 import numpy as np
+import pandas as ps
 import warnings
 from .robcent import robcent
 from .snipls import snipls
@@ -71,9 +72,9 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 matrix itself. This is less stable for very flat data (p >> n), 
                 yet yields identical results to the SPRM R implementation 
                 available from CRAN.   
-    columns (def false): Either boolean or pandas Index
+    colums (def false): Either boolean or list
         if False, no column names supplied 
-        if an Index (will only take length x_data.shape[1]), the column names of 
+        if a list (will only take length x_data.shape[1]), the column names of 
             the x_data supplied in this list, will be printed in verbose mode
     copy (def True): boolean, whether to copy data
         Note: copy not yet aligned with sklearn def  
@@ -135,6 +136,11 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             raise MyException("Number of cases in y and X must be identical.")
         if len(y.shape) >1:
             y = np.array(y).reshape(-1).astype('float64')
+            
+        if type(X) == ps.core.frame.DataFrame:
+            X = X.to_numpy()
+        if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
+            y = y.to_numpy().T.astype('float64')
 
         scaling = robcent(center=self.centre, scale=self.scale)
         Xs = scaling.fit(X).astype('float64')
@@ -208,7 +214,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         wx = np.array(wx).reshape(-1)
         w = (wx*wy).astype("float64")
         if (w < 1e-06).any():
-            w0 = np.where(w < 1e-06)
+            w0 = np.where(w < 1e-06)[0]
             w[w0] = 1e-06
             we = np.array(w,dtype=np.float64)
         else:
@@ -263,7 +269,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             we = (wye * wte).astype("float64")
             w0=[]
             if (any(we < 1e-06)):
-                w0 = np.where(we < 1e-06)
+                w0 = np.where(we < 1e-06)[0]
                 we[w0] = 1e-06
                 we = np.array(we,dtype=np.float64)
             if (len(w0) >= (n/2)):
@@ -340,6 +346,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
         
     def predict(self,Xn):
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = Xn.to_numpy()
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
@@ -347,6 +355,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         return(np.matmul(Xn,self.coef_) + self.intercept_)
         
     def transform(self,Xn):
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = Xn.to_numpy()
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
@@ -355,6 +365,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         return(Xnc*self.x_Rweights_)
         
     def weightnewx(self,Xn):
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = Xn.to_numpy()
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
@@ -378,6 +390,10 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         return(wtn)
         
     def valscore(self,Xn,yn,scoring):
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = Xn.to_numpy()
+        if type(yn) in [ps.core.frame.DataFrame,ps.core.series.Series]:
+            yn = yn.to_numpy().T.astype('float64')
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))

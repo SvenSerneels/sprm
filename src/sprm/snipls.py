@@ -50,6 +50,17 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.copy = copy
 
     def fit(self,X,y):
+        if type(X) == ps.core.frame.DataFrame:
+            X = np.matrix(X)
+        if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
+            y = np.matrix(y).T
+        (n,p) = X.shape
+        ny = y.shape[0]
+        if ny != n:
+            raise(MyException("Number of cases in X and y needs to agree"))
+        if len(y.shape) >1:
+            y = np.array(y).reshape(-1)
+        y = y.astype("float64")
         if self.copy:
             X0 = copy.deepcopy(X)
             y0 = copy.deepcopy(y)
@@ -58,14 +69,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             y0 = y
         self.X = X0
         self.y = y0
-        X0 = np.matrix(X0).astype("float64")
-        (n,p) = X0.shape
-        ny = y0.shape[0]
-        if ny != n:
-            raise(MyException("Number of cases in X and y needs to agree"))
-        if len(y.shape) >1:
-            y0 = np.array(y0).reshape(-1)
-        y0 = y0.astype("float64")
+        X0 = X0.astype("float64")
         centring = robcent(center=self.centre,scale=self.scale)
         X0= centring.fit(X0).astype('float64')
         mX = centring.col_loc_

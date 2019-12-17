@@ -77,7 +77,9 @@ class robcent(_BaseComposition,BaseEstimator):
         general function call in scale_data. 
         """
         
-        s = srs.mad(X,c=c,axis=0)
+        s = np.median(np.abs(X - np.median(X,axis=0)),axis=0)/c
+        s = np.array(s).reshape(-1)
+        # statsmodels.robust.mad is not as flexible toward matrix input
         setattr(self,"col_mad_",s)
         
         return s
