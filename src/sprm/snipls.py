@@ -12,6 +12,7 @@ from sklearn.base import RegressorMixin,BaseEstimator,TransformerMixin
 from sklearn.utils.metaestimators import _BaseComposition
 import copy
 import numpy as np
+import pandas as ps
 from . import robcent
 from ._m_support_functions import MyException
 
