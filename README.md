@@ -169,7 +169,7 @@ outputs. Therefore, dimension reduction outputs like `x_scores_`, `x_loadings_`,
   Estimate and predict by RM: 
   
         from sprm import rm
-        res_rm = rm('Hampel',.95,.975,.999,'median','mad','specific',True,100,.01,columns,True)
+        res_rm = rm('Hampel',.95,.975,.999,'median','mad','specific',True,100,.01,True)
         res_rm.fit(X0[:2666],y0[:2666])
         res_rm.predict(X0[2666:])
         
