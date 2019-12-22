@@ -161,9 +161,10 @@ To run a toy example:
 The Robust M (RM) estimator
 ===========================
 
-RM has been implemented to be consistent with SPRM. It takes the same arguments, except for `eta` and `n_components`, 
+RM has been implemented to be consistent with SPRM. It takes the same arguments, except for `eta`, `n_components` and `columns`, 
 because it does not perform dimension reduction nor variable selection. For the same reasons, the outputs are limited to regression
-outputs. Therefore, dimension reduction outputs like `x_scores_`, `x_loadings_`, etc. are not provided. 
+outputs. Therefore, dimension reduction outputs like `x_scores_`, `x_loadings_`, etc. are not provided. For R adepts, note that a
+[cellwise robust](https://github.com/SebastiaanHoppner/CRM) version of RM has recently been introduced. 
         
   Estimate and predict by RM: 
   
