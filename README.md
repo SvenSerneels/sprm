@@ -1,13 +1,17 @@
 Sparse partial robust M regression
 ==================================
 
-A scikit-learn compatible Python 3 package for Sparse Partial Robust M regresion (SPRM)\[1\], a sparse and robust version of univariate partial least squares (PLS1). 
+A scikit-learn compatible Python 3 package for robust multivariate regression statistics, including:
+- Sparse Partial Robust M regresion (SPRM)\[1\],  a sparse and robust version of univariate partial least squares (PLS1). 
+- Sparse NIPALS Regression (SNIPLS)
+- Robust M regression
+- Robust centring and scaling   
 
 
 Description
 -----------
 
-The method performs four tasks at the same time in a single, consistent estimate: 
+The SPRM method performs four tasks at the same time in a single, consistent estimate: 
 - *regression*: yields regression coefficients and predicts responses
 - *dimension reduction*: calculates interpretable PLS-like components maximizing covariance to the predictand in a robust way 
 - *variable selection*: depending on the paramter settings, can yield highly sparse regression coefficients that contain exact zero elements 
@@ -15,7 +19,7 @@ The method performs four tasks at the same time in a single, consistent estimate
 
 Note: all the methods contained in this package have been designed for continuous data. They do not work correctly for caetgorical or textual data. 
         
-The code is aligned to ScikitLearn, such that modules such as GridSearchCV can flawlessly be applied to it. 
+The code is aligned to ScikitLearn, such that modules such as `GridSearchCV` can flawlessly be applied to it. 
 
 The repository contains
 - The estimator (`sprm.py`) 
@@ -25,6 +29,7 @@ The repository contains
 - Robust M regression estimator (`rm.py`)
 - Ancillary functions for plotting (`_plot_internals.py`)
 - Ancillary functions for M-estimation (`_m_support_functions.py`)
+- Ancillary functions for preprocessing (`_preproc_utilities.py`)
 
 How to install
 --------------
@@ -56,14 +61,22 @@ Parameters
 - `probp1`: float, probability cutoff for start of downweighting (e.g. 0.95)
 - `probp2`: float, probability cutoff for start of steep downweighting (e.g. 0.975, only relevant if `fun='Hampel'`)
 - `probp3`: float, probability cutoff for start of outlier omission (e.g. 0.999, only relevant if `fun='Hampel'`)
-- `centring`: str, type of centring (`'mean'` or `'median'`, the latter recommended)
+- `centring`: str, type of centring (`'mean'`, `'median'` or `'l1median'`, the latter recommended statistically, if too slow, switch to `'median'`)
 - `scaling`: str, type of scaling (`'std'`,`'mad'`, the latter recommended, or `'None'`)
 - `verbose`: boolean, specifying verbose mode
 - `maxit`: int, maximal number of iterations in M algorithm
 - `tol`: float, tolerance for convergence in M algorithm 
 - `start_cutoff_mode`: str, value `'specific'` will set starting value cutoffs specific to X and y (preferred); any other value will set X and y stating cutoffs identically. The non-specific setting yields identical results to the SPRM R implementation available from [CRAN](https://cran.r-project.org/web/packages/sprm/index.html).
 - `start_X_init`: str, values `'pcapp'` will include a PCA/broken stick projection to calculate the initial predictor block caseweights; any other value will just calculate initial predictor block case weights based on Euclidian distances within that block. The is less stable for very flat data (p >> n). 
-- `colums` (def `False`): Either boolean or a pandas Index. If `False`, no column names supplied. If an Index (will only take length `x_data.shape[1]`), the column names of the x_data supplied in this list, will be printed in verbose mode
+- `colums` (def `False`): Either bool, list, numpy array or pandas Index
+        if `False`, no column names supplied
+        if `True`, 
+            if X data are supplied as a pandas DataFrame, will extract column 
+                names from the frame
+            else throws an error
+        if a list, array or Index (will only take length x_data.shape[1]), 
+            the column names of the x_data supplied in this list, 
+            will be printed in verbose mode
 - `copy` (def `True`): boolean, whether to create deep copy of the data in the calculation process 
 
 Attributes
@@ -127,13 +140,13 @@ To run a toy example:
 - Estimate and predict by SPRM
         
         from sprm import sprm
-        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'median','mad',True,100,.01,'ally','xonly',columns,True)
+        res_sprm = sprm(2,.8,'Hampel',.95,.975,.999,'l1median','mad',True,100,.01,'ally','xonly',columns,True)
         res_sprm.fit(X0[:2666],y0[:2666])
         res_sprm.predict(X0[2666:])
         res_sprm.transform(X0[2666:])
         res_sprm.weightnewx(X0[2666:])
         res_sprm.get_params()
-        res_sprm.set_params(fun="Huber")
+        res_sprm.set_params(centre='median')
         
 - Cross-validated using GridSearchCV: 
         
@@ -327,9 +340,23 @@ separately.
         
 Plus some minor changes to make it consistent with the latest numpy and matplotlib versions. 
 
+Version 0.4
+-----------
+The preprocesing routine `robcent` has been refactored. Functionality has been 
+added to centre the data nonparametrically by the L1 median. The ancillary functions
+for `robcent` have been moved into `_preproc_utilities.py`. 
+
+Furthermore, `sprm`, `snipls` and `rm` have all three been modified such that
+they accept matrix, array or data frame input for both X and y. Also, the option
+to provide column names has been extended to automatic extraction from data frame
+input, or direct input as list, array or pandas Index. 
+
+The license has been changed from GPL3 to MIT. 
+
 Work to do
 ----------
-- optimize alignment to sklearn
+- optimize alignment to `sklearn`
 - optimize for speed 
 - extend to multivariate responses (open research topic !)
-- suggestions always welcome 
+- write robust `GridSearchCV` 
+- suggestions and contributions always welcome!

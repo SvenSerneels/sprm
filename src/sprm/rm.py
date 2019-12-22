@@ -20,6 +20,7 @@ from sklearn.base import RegressorMixin,BaseEstimator
 from sklearn.utils.metaestimators import _BaseComposition
 import copy
 import numpy as np
+import pandas as ps
 from scipy.stats import norm, chi2
 from . import robcent
 from ._m_support_functions import *
@@ -39,7 +40,8 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
                  (e.g. 0.975, only relevant if fun='Hampel')
     probp3: float, probability cutoff for start of outlier omission 
                  (e.g. 0.999, only relevant if fun='Hampel')
-    centre: str, type of centring ('mean' or 'median' [recommended])
+    centre: str, type of centring (`'mean'`, `'median'` or `'l1median'`, 
+            the latter recommended statistically, if too slow, switch to `'median'`)
     scale: str, type of scaling ('std','mad' [recommended] or 'None')
     verbose: boolean, specifying verbose mode
     maxit: int, maximal number of iterations in M algorithm
@@ -49,10 +51,6 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         any other value will set X and y stating cutoffs identically. 
         The latter yields identical results to the SPRM R implementation available from
         CRAN. 
-    colums (def false): Either boolean or list
-        if False, no column names supplied 
-        if a list (will only take length x_data.shape[1]), the column names of 
-            the x_data supplied in this list, will be printed in verbose mode
     copy (def True): boolean, whether to copy data
         Note: copy not yet aligned with sklearn def  
     
@@ -61,7 +59,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
     def __init__(self,fun='Hampel',probp1=0.95
                  ,probp2=0.975,probp3=0.999,centre='median',scale='mad'
                  ,start_cutoff_mode='specific',verbose=True,maxit=100
-                 ,tol=0.01,columns=False,copy=True):
+                 ,tol=0.01,copy=True):
         self.fun = fun
         self.probp1 = probp1
         self.probp2 = probp2
@@ -72,7 +70,6 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         self.verbose = verbose
         self.maxit = maxit
         self.tol = tol
-        self.columns = columns
         self.copy = copy
         self.probctx_ = 'irrelevant'
         self.probcty_ = 'irrelevant'
@@ -98,7 +95,15 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
             y = np.array(y).reshape(-1)
         if ny != n:
             raise MyException("Number of cases in y and X must be identical.")
-
+        
+        if len(y.shape) >1:
+            y = np.array(y).reshape(-1).astype('float64')
+            
+        if type(X) == ps.core.frame.DataFrame:
+            X = X.to_numpy()
+        if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
+            y = y.to_numpy().T.astype('float64')
+        
         scaling = robcent(center=self.centre, scale=self.scale)
         Xs = scaling.fit(X).astype('float64')
         mX = scaling.col_loc_
@@ -138,7 +143,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         wx = np.array(wx).reshape(-1)
         w = (wx*wy).astype("float64")
         if (w < 1e-06).any():
-            w0 = np.where(w < 1e-06)
+            w0 = np.where(w < 1e-06)[0]
             w[w0] = 1e-06
             we = np.array(w,dtype=np.float64)
         else:
@@ -173,7 +178,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
             we = (wye * wx).astype("float64")
             w0=[]
             if (any(we < 1e-06)):
-                w0 = np.where(we < 1e-06)
+                w0 = np.where(we < 1e-06)[0]
                 we[w0] = 1e-06
                 we = np.array(we,dtype=np.float64)
             if (len(w0) >= (n/2)):

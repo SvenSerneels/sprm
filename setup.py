@@ -36,7 +36,7 @@ setup(
     url="https://github.com/SvenSerneels/sprm",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     packages=find_packages('src'),  # include all packages under src

@@ -56,8 +56,8 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                  (e.g. 0.975, only relevant if fun='Hampel')
     probp3: float, probability cutoff for start of outlier omission 
                  (e.g. 0.999, only relevant if fun='Hampel')
-    centre: str, type of centring ('mean', 'median' or 'l1median' [the latter 
-                 recommended statistically; if too slow, choose 'median'])
+    centre: str, type of centring (`'mean'`, `'median'` or `'l1median'`, 
+            the latter recommended statistically, if too slow, switch to `'median'`)
     scale: str, type of scaling ('std','mad' [recommended] or 'None')
     verbose: boolean, specifying verbose mode
     maxit: int, maximal number of iterations in M algorithm
@@ -74,12 +74,16 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                 matrix itself. This is less stable for very flat data (p >> n), 
                 yet yields identical results to the SPRM R implementation 
                 available from CRAN.   
-    colums (def false): Either boolean or list
-        if False, no column names supplied 
-        if a list (will only take length x_data.shape[1]), the column names of 
-            the x_data supplied in this list, will be printed in verbose mode
+    colums (def false): Either boolean, list, numpy array or pandas Index
+        if False, no column names supplied
+        if True, 
+            if X data are supplied as a pandas data frame, will extract column 
+                names from the frane
+            throws an error for other data input types
+        if a list, array or Index (will only take length x_data.shape[1]), 
+            the column names of the x_data supplied in this list, 
+            will be printed in verbose mode
     copy (def True): boolean, whether to copy data
-        Note: copy not yet aligned with sklearn def  
     
     """
     
@@ -138,8 +142,14 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             raise MyException("Number of cases in y and X must be identical.")
         if len(y.shape) >1:
             y = np.array(y).reshape(-1).astype('float64')
-            
+        if type(self.columns) is list: 
+            self.columns = np.array(self.columns)
+        elif type(self.columns) is bool:
+            if type(X) != ps.core.frame.DataFrame and self.columns:
+                raise(MyException("Columns set to true can only extract column names for data frame input"))
         if type(X) == ps.core.frame.DataFrame:
+            if type(self.columns) is bool and self.columns:
+                self.columns = X.columns
             X = X.to_numpy()
         if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
             y = y.to_numpy().T.astype('float64')

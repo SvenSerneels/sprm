@@ -32,10 +32,17 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     n_components: int, min 1. Note that if applied on data, n_components shall 
         take a value <= min(x_data.shape)
     verbose: Boolean (def true): to print intermediate set of columns retained
-    columns (def false): Either boolean or pandas Index
-        if False, no column names supplied 
-        if an Index (will only take length x_data.shape[1]), the column names of 
-            the x_data supplied in this list, will be printed in verbose mode
+    colums (def false): Either boolean, list, numpy array or pandas Index
+        if False, no column names supplied
+        if True, 
+            if X data are supplied as a pandas data frame, will extract column 
+                names from the frane
+            throws an error for other data input types
+        if a list, array or Index (will only take length x_data.shape[1]), 
+            the column names of the x_data supplied in this list, 
+            will be printed in verbose mode
+    centre: str, type of centring (`'mean'` [recommended], `'median'` or `'l1median'`), 
+    scale: str, type of scaling ('std','mad' or 'None')
     copy (def True): boolean, whether to copy data
     Note: copy not yet aligned with sklearn def  - we always copy    
     
@@ -52,7 +59,14 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.copy = copy
 
     def fit(self,X,y):
+        if type(self.columns) is list: 
+            self.columns = np.array(self.columns)
+        elif type(self.columns) is bool:
+            if type(X) != ps.core.frame.DataFrame and self.columns:
+                raise(MyException("Columns set to true can only extract column names for data frame input"))
         if type(X) == ps.core.frame.DataFrame:
+            if type(self.columns) is bool and self.columns:
+                self.columns = X.columns
             X = np.matrix(X)
         if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
             y = np.matrix(y).T
