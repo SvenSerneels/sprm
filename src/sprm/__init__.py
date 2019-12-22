@@ -9,7 +9,7 @@ Created on Sun Jul 22 12:17:17 2018
 __name__ = "sprm"
 __author__ = "Sven Serneels"
 __license__ = "MIT"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __date__ = "2019-12-22"
 
 from .robcent import robcent
