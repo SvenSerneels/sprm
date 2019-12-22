@@ -15,6 +15,7 @@ import numpy as np
 import pandas as ps
 from . import robcent
 from ._m_support_functions import MyException
+from ._preproc_utilities import scale_data
 
 class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     """
@@ -172,5 +173,5 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         (n,p) = Xn.shape
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
-        Xnc = self.scaling.scale_data(Xn,self.x_loc_,self.x_sca_)
+        Xnc = scale_data(Xn,self.x_loc_,self.x_sca_)
         return(Xnc*self.x_Rweights_)

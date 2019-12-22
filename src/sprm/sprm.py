@@ -31,6 +31,7 @@ import warnings
 from .robcent import robcent
 from .snipls import snipls
 from ._m_support_functions import *
+from ._preproc_utilities import scale_data
 
 class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
@@ -316,10 +317,10 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             # yfit2 = (np.matmul(Xrc.Xs.astype("float64"),b) + b0)*yrc.col_sca + yrc.col_loc
             # already more generally included
         else:
-            if (self.centring == "mean"):
-                intercept = np.mean(y - np.matmul(X,b))
+            if (self.centre == "mean"):
+                b0 = np.mean(y - np.matmul(X,b))
             else:
-                intercept = np.median(np.array(y - np.matmul(X,b)))
+                b0 = np.median(np.array(y - np.matmul(X,b)))
             # yfit = np.matmul(X,b) + intercept
         yfit = yfit.reshape(-1)    
         r = y - yfit
@@ -361,7 +362,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         Xn = Xn[:,self.non_zero_scale_vars_]
-        Xnc = self.scaling.scale_data(Xn,self.x_loc_[self.non_zero_scale_vars_],self.x_sca_[self.non_zero_scale_vars_])
+        Xnc = scale_data(Xn,self.x_loc_[self.non_zero_scale_vars_],self.x_sca_[self.non_zero_scale_vars_])
         return(Xnc*self.x_Rweights_)
         
     def weightnewx(self,Xn):

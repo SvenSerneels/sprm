@@ -3,6 +3,7 @@
 """
 Created on Sun Feb 4 2018
 Updated on Sun Dec 16 2018
+Refactored on Sat Dec 21 2019
 
 Class for robust centering and scaling of input data for regression and machine
 learning 
@@ -10,30 +11,40 @@ learning
 Version 2.0: Code entirely restructured compared to version 1.0. 
 Code made consistent with sklearn logic: fit(data,params) yields results. 
 Code makes more effciient use of numpy builtin estimators.
+Version 3.0:
+Code now takes strings or functions as input to centring and scaling. 
+Utility functions have been moved to _preproc_utilities.py 
+Code now supplied for l1median cetring, with options to use different 
+scipy.optimize optimization algorithms
 
 Parameters
 ----------
-    center: str, location estimator. Presently allowed: 'mean', 'median' or
-                 'None'. 
-    scale: str, scale estimator. Presently allowed: 'mad', 'std' or 'None'. 
-                 
-    Note that 'sd' also gives access to robust trimmed stds.
+    `center`: str or callable, location estimator. String has to be name of the 
+            function to be used, or 'None'. 
+    `scale`: str or callable, scale estimator. 
 
 Methods
 -------
-    fit(X,trimming): Will scale X using 'center' and 'scale' estimators. 
-    mean(X,trimming): Column-wise mean, appended to object as "col_mean_".
-    median(X): Column-wise median, appended to object as "col_med_".
-    std(X,trimming): Column-wise std, appended to object as "col_std_".
-    mad(X,c):  Column-wise median absolute deviation, 
-            appended to object as "col_mad_".
-    scale_data(X,m,s) - centers and scales X on center m (as vector) and 
-            scale s (as vector).
+    `fit(X,trimming)`: Will scale X using 'center' and 'scale' estimators, with 
+        a certain trimming fraction when applicable. 
             
 Arguments for methods: 
-    X: array-like, n x p, the data.
-    trimming: float, fraction to be trimmed (must be in (0,1)).
-    c, float, consistency factor.
+    `X`: array-like, n x p, the data.
+    `trimming`: float, fraction to be trimmed (must be in (0,1)). 
+    
+Ancillary functions in _preproc_utilities.py:
+`scale_data(X,m,s)`: centers and scales X on center m (as vector) and 
+            scale s (as vector).
+`mean(X,trimming)`: Column-wise mean.
+`median(X)`: Column-wise median.
+`l1median(X)`: L1 or spatial median. Optional arguments: 
+    `x0`: starting point for optimization, defaults to column wise median  
+    `method`: optimization algorithm, defaults to 'SLSQP' 
+    `tol`: tolerance, defaults to 1e-8
+    `options`: list of options for `scipy.optimize.minimize`
+`std(X,trimming)`: Column-wise std.
+`mad(X,c)`: Column-wise median absolute deviation, with consistency factor c. 
+
              
 Remarks
 -------
@@ -49,9 +60,8 @@ from __future__ import unicode_literals
 from sklearn.base import BaseEstimator
 from sklearn.utils.metaestimators import _BaseComposition
 import numpy as np
-import scipy.stats as sps
-from statsmodels import robust as srs
 from ._m_support_functions import MyException
+from ._preproc_utilities import *
 
 class robcent(_BaseComposition,BaseEstimator):
     
@@ -63,91 +73,7 @@ class robcent(_BaseComposition,BaseEstimator):
         
         self.center = center
         self.scale = scale 
-        self.licenter = ['mean','median','None']
-        self.liscale = ['mad','std','None']
-        if not(self.center in self.licenter):
-            raise(MyException('center options are: "mean", "median", "None"'))
-        if not(self.scale in self.liscale):
-            raise(MyException('scale options are: "mad", "std", "None"'))
         
-    def mad(self,X,c=0.6744897501960817,**kwargs):
-        
-        """
-        Column-wise median absolute deviation. **kwargs included to allow 
-        general function call in scale_data. 
-        """
-        
-        s = np.median(np.abs(X - np.median(X,axis=0)),axis=0)/c
-        s = np.array(s).reshape(-1)
-        # statsmodels.robust.mad is not as flexible toward matrix input
-        setattr(self,"col_mad_",s)
-        
-        return s
-    
-    def median(self,X,**kwargs):
-        
-        """
-        Column-wise median. **kwargs included to allow 
-        general function call in scale_data. 
-        """
-        
-        m = np.median(X,axis=0)
-        m = np.array(m).reshape(-1)
-        setattr(self,"col_med_",m)
-        
-        return m
-    
-    def mean(self,X,trimming=0):
-        
-        """
-        Column-wise mean or trimmed mean. Trimming to be entered as fraction. 
-        """
-        
-        m = sps.trim_mean(X,trimming,0)
-        setattr(self,"col_mean_",m)
-        
-        return m
-    
-    def std(self,X,trimming=0):
-        
-        """
-        Column-wise standard devaition or trimmed std. 
-        Trimming to be entered as fraction. 
-        """
-        
-        if trimming==0:
-            s = np.power(np.var(X,axis=0),.5)
-            s = np.array(s).reshape(-1)
-        else: 
-            var = sps.trim_mean(np.square(X - sps.trim_mean(X,trimming,0)),
-                                trimming,0)
-            s = np.sqrt(var)
-            
-        setattr(self,"col_std_",s)    
-        return s
-    
-    def scale_data(self,X,m,s):
-        
-        """
-        Column-wise data scaling on location and scale estimates. 
-        
-        """
-        
-        n = X.shape
-        if len(n) > 1:
-            p = n[1]
-        else:
-            p = 1
-        n = n[0]
-        
-        if p == 1:
-            Xm = X - float(m)
-            Xs = Xm / s
-        else:
-            Xm = X - np.matrix([m for i in range(1,n+1)])
-            Xs = Xm / np.matrix([s for i in range(1,n+1)])
-        return(Xs)
-    
     
     def fit(self,X,**kwargs):
         
@@ -156,6 +82,17 @@ class robcent(_BaseComposition,BaseEstimator):
         Trimming fraction can be provided as keyword argument.
         """
         
+        if type(self.center) is str: 
+            center = eval(self.center)
+        else:
+            center = self.center
+            
+        if type(self.scale) is str: 
+            scale = eval(self.scale)
+        else:
+            scale = self.scale
+            
+
         n = X.shape
         if len(n) > 1:
             p = n[1]
@@ -171,18 +108,18 @@ class robcent(_BaseComposition,BaseEstimator):
         if self.center == "None":
             m = np.repeat(0,p)
         else:
-            m = eval("self." + self.center + "(X,trimming=trimming)")
+            m = center(X,trimming=trimming)
             
         setattr(self,"col_loc_",m)    
             
         if self.scale == "None":
             s = np.repeat(1,p)
         else:
-            s = eval("self." + self.scale + "(X,trimming=trimming)")
+            s = scale(X,trimming=trimming)
             
         setattr(self,"col_sca_",s)
             
-        Xs = self.scale_data(X,m,s)
+        Xs = scale_data(X,m,s)
         setattr(self,'datas_',Xs)
             
         return Xs
@@ -194,7 +131,7 @@ class robcent(_BaseComposition,BaseEstimator):
         Number of columns needs to match.
         """
         
-        Xns = self.scale_data(Xn,self.col_loc_,self.col_sca_)
+        Xns = scale_data(Xn,self.col_loc_,self.col_sca_)
         setattr(self,'datans_',Xns)
         return(Xns)
         
