@@ -61,7 +61,7 @@ Parameters
 - `probp1`: float, probability cutoff for start of downweighting (e.g. 0.95)
 - `probp2`: float, probability cutoff for start of steep downweighting (e.g. 0.975, only relevant if `fun='Hampel'`)
 - `probp3`: float, probability cutoff for start of outlier omission (e.g. 0.999, only relevant if `fun='Hampel'`)
-- `centring`: str, type of centring (`'mean'`, `'median'` or `'l1median'`, the latter recommended statistically, if too slow, switch to `'median'`)
+- `centring`: str, type of centring (`'mean'`, `'median'`,`'l1median'` or `'kstepLTS'`)
 - `scaling`: str, type of scaling (`'std'`,`'mad'`, the latter recommended, or `'None'`)
 - `verbose`: boolean, specifying verbose mode
 - `maxit`: int, maximal number of iterations in M algorithm
@@ -353,6 +353,8 @@ to provide column names has been extended to automatic extraction from data fram
 input, or direct input as list, array or pandas Index. 
 
 The license has been changed from GPL3 to MIT. 
+
+0.4.2. `'kstepLTS'` location estimator included.
 
 Work to do
 ----------

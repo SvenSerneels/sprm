@@ -12,6 +12,7 @@ import numpy as np
 import scipy.stats as sps
 import scipy.optimize as spo
 from statsmodels import robust as srs
+import copy
 
 def mad(X,c=0.6744897501960817,**kwargs):
         
@@ -134,6 +135,35 @@ def l1median(X,**kwargs):
         return(median(X))
     else:
         return(_l1median(X,x0,**kwargs).x)
+        
+def kstepLTS(X, maxit = 5, tol = 1e-10,**kwargs):
+    
+    """
+    Computes the K-step LTS estimator of location
+    It uses the spatial median as a starting value, and yields an 
+    estimator with improved statistical efficiency, but at a higher 
+    computational cost. 
+    Inputs:
+        X: data matrix
+        maxit: maximum number of iterations
+        tol: convergence tolerance
+    Outputs:
+        m2: location estimate
+    """
+    n,p = X.shape
+    m1 = l1median(X) # initial estimate
+    m2 = copy.deepcopy(m1)
+    iteration = 0
+    unconverged = True
+    while(unconverged and (iteration < maxit)):
+        dists = np.sum(np.square(X-m1),axis=1)
+        cutdist = np.sort(dists,axis=0)[int(np.floor((n + 1) / 2))-1,0]
+        hsubset = np.where(dists <= cutdist)[0]
+        m2 = np.array(np.mean(X[hsubset,:],axis=0)).reshape((p,))
+        unconverged = (max(abs(m1 - m2)) > tol)
+        iteration += 1
+        m1 = copy.deepcopy(m2)
+    return(m2)
     
 def scale_data(X,m,s):
         
