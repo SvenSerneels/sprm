@@ -14,6 +14,44 @@ import scipy.optimize as spo
 from statsmodels import robust as srs
 import copy
 
+def _handle_zeros_in_scale(scale, copy=True):
+    ''' 
+    Makes sure that whenever scale is zero, we handle it correctly.
+    This happens in most scalers when we have constant features.
+    Taken from ScikitLearn.preprocesssing'''
+
+    # if we are fitting on 1D arrays, scale might be a scalar
+    if np.isscalar(scale):
+        if scale == .0:
+            scale = 1.
+        return scale
+    elif isinstance(scale, np.ndarray):
+        if copy:
+            # New array to avoid side-effects
+            scale = scale.copy()
+        scale[scale == 0.0] = 1.0
+        return scale
+    
+def _check_trimming(t): 
+    
+    if ((t > .99) or (t < 0)): 
+        raise(ValueError("Trimming fraction must be in [0,1)"))
+    
+def _check_input(X): 
+    
+    if(type(X) == np.ndarray): 
+        X = np.matrix(X)
+    
+    n,p = X.shape 
+    
+    if n==1:
+        if p > 2: 
+            X = X.reshape((-1,1))
+        else: 
+            raise(ValueError("Statistics not meaningful with fewer than 3 cases"))
+    return(X)
+    
+
 def mad(X,c=0.6744897501960817,**kwargs):
         
     """
@@ -179,10 +217,14 @@ def scale_data(X,m,s):
             p = 1
         n = n[0]
         
+        s = _handle_zeros_in_scale(s)
+        
         if p == 1:
             Xm = X - float(m)
             Xs = Xm / s
         else:
             Xm = X - np.matrix([m for i in range(1,n+1)])
             Xs = Xm / np.matrix([s for i in range(1,n+1)])
-        return(Xs)
+        return(Xs)       
+
+        

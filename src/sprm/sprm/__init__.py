@@ -12,12 +12,6 @@ __license__ = "MIT"
 __version__ = "0.5.0"
 __date__ = "2020-03-28"
 
-from .preprocessing.robcent import VersatileScaler
-from .sprm.sprm import sprm
-from .sprm.snipls import snipls
-from .sprm.rm import rm
-from .sprm.sprm_plot import sprm_plot,sprm_plot_cv
-
 
 
 

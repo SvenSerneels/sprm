@@ -27,7 +27,7 @@ Version 0.2: Ancillary functions: have been moved to ._plot_internals
 from __future__ import absolute_import, division, print_function
 from __future__ import unicode_literals
 
-from . import sprm 
+from .sprm import sprm
 from ._m_support_functions import MyException
 from ._plot_internals import cv_score_table
 
