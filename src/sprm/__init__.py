@@ -9,10 +9,10 @@ Created on Sun Jul 22 12:17:17 2018
 __name__ = "sprm"
 __author__ = "Sven Serneels"
 __license__ = "MIT"
-__version__ = "0.4.2"
-__date__ = "2020-03-25"
+__version__ = "0.5.0"
+__date__ = "2020-03-28"
 
-from .robcent import robcent
+from ..preprocessing.robcent import *
 from .sprm import sprm
 from .snipls import snipls
 from .rm import rm

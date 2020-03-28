@@ -13,7 +13,7 @@ Module containing:
          Plotting functions moved to .sprm_plot
     0.3: Sparse NIPALS (SNIPLS) estimator moved to .snipls.
 
-Depends on robcent class for robustly centering and scaling data and on snipls 
+Depends on robcent.VersatileScaler class for robustly centering and scaling data and on snipls 
 class
 
 @author: Sven Serneels, Ponalytics
@@ -28,10 +28,10 @@ import copy
 import numpy as np
 import pandas as ps
 import warnings
-from .robcent import robcent
+from ..preprocessing.robcent import VersatileScaler
 from .snipls import snipls
 from ._m_support_functions import *
-from ._preproc_utilities import scale_data
+from ..preprocessing._preproc_utilities import scale_data
 
 class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
@@ -154,17 +154,18 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
             y = y.to_numpy().T.astype('float64')
 
-        scaling = robcent(center=self.centre, scale=self.scale)
-        Xs = scaling.fit(X).astype('float64')
+        scaling = VersatileScaler(center=self.centre, scale=self.scale)
+        Xs = scaling.fit_transform(X).astype('float64')
         mX = scaling.col_loc_
         sX = scaling.col_sca_
-        ys = scaling.fit(y).astype('float64')
+        ys = scaling.fit_transform(y).astype('float64')
         my = scaling.col_loc_
         sy = scaling.col_sca_
         setattr(self,"x_loc_",mX)
         setattr(self,"y_loc_",my)
         setattr(self,"x_sca_",sX)
         setattr(self,"y_sca_",sy)
+        ys = np.array(ys).reshape(-1)
         
         zero_scale = np.where(sX < 1e-5)[0]
         vars_to_keep = np.arange(0,p)
@@ -192,7 +193,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             spc /= np.sum(spc)
             relcomp = max(np.where(spc - brokenstick(min(p,n))[:,0] <=0)[0][0],1)
             Urc = np.array(U[:,0:relcomp])
-            Us = scaling.fit(Urc)
+            Us = scaling.fit_transform(Urc)
         else: 
             Us = Xs
         wx = np.sqrt(np.array(np.sum(np.square(Us),1),dtype=np.float64))
@@ -200,7 +201,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if [self.centre,self.scale]==['median','mad']:
             wy = np.array(abs(ys),dtype=np.float64)
         else:
-            wy = (y - np.median(y))/(1.4826*np.median(abs(y-np.median(y))))
+            wy = (y - np.median(y,axis=0))/(1.4826*np.median(abs(y-np.median(y,axis=0)),axis=0))
         self.probcty_ = norm.ppf(self.probp1)
         if self.start_cutoff_mode == 'specific':
             self.probctx_ = chi2.ppf(self.probp1,relcomp)
@@ -225,6 +226,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             wy = Hampel(wy,self.probcty_,self.hampelby_,self.hampelry_)
         wx = np.array(wx).reshape(-1)
         w = (wx*wy).astype("float64")
+        print()
         if (w < 1e-06).any():
             w0 = np.where(w < 1e-06)[0]
             w[w0] = 1e-06
@@ -256,7 +258,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             scalet = self.scale
             if (scalet == "None"):
                 scaling.set_params(scale = "mad") 
-            dt = scaling.fit(T)
+            dt = scaling.fit_transform(T)
             wtn = np.sqrt(np.array(np.sum(np.square(dt),1),dtype=np.float64))
             wtn = wtn/np.median(wtn)
             wtn = wtn.reshape(-1)
@@ -307,7 +309,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         R = res_snipls.x_Rweights_
         Xrw = np.array(np.multiply(Xs,np.sqrt(WEmat)).astype("float64"))
         scaling.set_params(scale='None')
-        Xrw = scaling.fit(Xrw) 
+        Xrw = scaling.fit_transform(Xrw) 
         T = Xs * R
         if self.verbose:
             print("Final Model: Variables retained for " + str(self.n_components) + " latent variables: \n" 
@@ -352,7 +354,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         setattr(self,"y_caseweights_",wye)
         setattr(self,"caseweights_",we)
         setattr(self,"colret_",res_snipls.colret_)
-        setattr(self,'scaling',scaling)
+        setattr(self,'scaling_',scaling)
         return(self)
         pass
     
@@ -383,13 +385,13 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         Tn = self.transform(Xn)
-        scaling = self.scaling
+        scaling = self.scaling_
         scalet = self.scale
         if (scalet == "None"):
             scaling.set_params(scale = "mad")
         if isinstance(Tn,np.matrix):
             Tn = np.array(Tn)
-        dtn = scaling.fit(Tn)
+        dtn = scaling.fit_transform(Tn)
         wtn = np.sqrt(np.array(np.sum(np.square(dtn),1),dtype=np.float64))
         wtn = wtn/np.median(wtn)
         wtn = wtn.reshape(-1)

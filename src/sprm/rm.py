@@ -22,7 +22,7 @@ import copy
 import numpy as np
 import pandas as ps
 from scipy.stats import norm, chi2
-from . import robcent
+from ..preprocessing.robcent import VersatileScaler
 from ._m_support_functions import *
 
 class rm(_BaseComposition,BaseEstimator,RegressorMixin):
@@ -104,13 +104,14 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         if type(y) in [ps.core.frame.DataFrame,ps.core.series.Series]:
             y = y.to_numpy().T.astype('float64')
         
-        scaling = robcent(center=self.centre, scale=self.scale)
-        Xs = scaling.fit(X).astype('float64')
+        scaling = VersatileScaler(center=self.centre, scale=self.scale)
+        Xs = scaling.fit_transform(X).astype('float64')
         mX = scaling.col_loc_
         sX = scaling.col_sca_
-        ys = scaling.fit(y).astype('float64')
+        ys = scaling.fit_transform(y).astype('float64')
         my = scaling.col_loc_
         sy = scaling.col_sca_
+        ys = np.array(ys).reshape(-1)
 
         wx = np.sqrt(np.array(np.sum(np.square(Xs),1),dtype=np.float64))
         wx = wx/np.median(wx)
@@ -200,7 +201,7 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         wy[w0] = 0
         Xrw = np.array(np.multiply(Xs,np.sqrt(WEmat)).astype("float64"))
         scaling.set_params(scale='None')
-        Xrw = scaling.fit(Xrw) 
+        Xrw = scaling.fit_transform(Xrw) 
         b_rescaled = np.multiply(np.reshape(sy/sX,(p,1)),b)
         yp_rescaled = np.array(X*b_rescaled).reshape(-1)
         if(self.centre == "mean"):
@@ -234,13 +235,15 @@ class rm(_BaseComposition,BaseEstimator,RegressorMixin):
         setattr(self,"y_loc_",my)
         setattr(self,"x_sca_",sX)
         setattr(self,"y_sca_",sy)
-        setattr(self,'scaling',scaling)
+        setattr(self,'scaling_',scaling)
         return(self)
         pass
     
         
     def predict(self,Xn):
         (n,p) = Xn.shape
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = np.matrix(Xn)
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         return(np.matmul(Xn,self.coef_) + self.intercept_)

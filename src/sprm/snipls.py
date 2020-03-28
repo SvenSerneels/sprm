@@ -13,9 +13,9 @@ from sklearn.utils.metaestimators import _BaseComposition
 import copy
 import numpy as np
 import pandas as ps
-from . import robcent
+from ..preprocessing.robcent import VersatileScaler
 from ._m_support_functions import MyException
-from ._preproc_utilities import scale_data
+from ..preprocessing._preproc_utilities import scale_data
 
 class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     """
@@ -86,11 +86,11 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         self.X = X0
         self.y = y0
         X0 = X0.astype("float64")
-        centring = robcent(center=self.centre,scale=self.scale)
-        X0= centring.fit(X0).astype('float64')
+        centring = VersatileScaler(center=self.centre,scale=self.scale)
+        X0 = centring.fit_transform(X0).astype('float64')
         mX = centring.col_loc_
         sX = centring.col_sca_
-        y0 = centring.fit(y0).astype('float64')
+        y0 = centring.fit_transform(y0).astype('float64')
         my = centring.col_loc_
         sy = centring.col_sca_
         T = np.empty((n,self.n_components),float) 
@@ -102,7 +102,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
         B = np.empty((p,1),float) 
         oldgoodies = np.array([])
         Xi = X0
-        yi = np.matrix(y0).T
+        yi = y0
         for i in range(1,self.n_components+1):
             wh =  Xi.T * yi
             wh = wh/np.linalg.norm(wh,"fro")
@@ -130,7 +130,7 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
             T[:,i-1] = np.reshape(th,n)
             Xi = Xi - th * ph.T
             Xev[i-1] = (nth**2*np.linalg.norm(ph,"fro")**2)/np.sum(np.square(X0))*100
-            yev[i-1] = np.sum(nth**2*(ch**2))/np.sum(y0**2)*100
+            yev[i-1] = np.sum(nth**2*(ch**2))/np.sum(np.power(y0,2))*100
             if type(self.columns)==bool:
                 colret = goodies
             else:
@@ -179,12 +179,16 @@ class snipls(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
     
     def predict(self,Xn):
         (n,p) = Xn.shape
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = np.matrix(Xn)
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         return(np.matmul(Xn,self.coef_) + self.intercept_)
         
     def transform(self,Xn):
         (n,p) = Xn.shape
+        if type(Xn) == ps.core.frame.DataFrame:
+            Xn = np.matrix(Xn)
         if p!= self.X.shape[1]:
             raise(ValueError('New data must have seame number of columns as the ones the model has been trained with'))
         Xnc = scale_data(Xn,self.x_loc_,self.x_sca_)
