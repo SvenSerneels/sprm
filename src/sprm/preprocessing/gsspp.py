@@ -6,16 +6,13 @@ Created on Wed Mar 25 09:01:53 2020
 @author: Sven Serneels, Ponalytics, Mar 2020. 
 """
 
-# from ._roprepro_utils import * 
-# from ..sprm.robcent import robcent
-# from ..sprm._preproc_utilities import *
-
 __all__ = ['GenSpatialSignPrePprocessor','gen_ss_pp','gen_ss_covmat']
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from sprm.preprocessing.robcent import VersatileScaler, versatile_scale
-from sprm.preprocessing._preproc_utilities import *
+from .robcent import VersatileScaler, versatile_scale
+from ._preproc_utilities import *
+from .gsspp_utils import *
 
     
 class GenSpatialSignPrePprocessor(TransformerMixin,BaseEstimator):
