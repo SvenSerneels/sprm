@@ -40,12 +40,12 @@ The package is distributed through PyPI, so install through:
         pip install sprm 
     
 
-1) The SPRM estimator
-=====================
+1\. The SPRM estimator
+======================
 
 The main SPRM implementation yields a class with the following structure:
 
-1)1) Dependencies
+1\.1\. Dependencies
 -----------------
 - From `<sklearn.base>`: `BaseEstimator, TransformerMixin, RegressorMixin`
 - From `<sklearn.utils>`: `_BaseComposition`
@@ -55,7 +55,7 @@ The main SPRM implementation yields a class with the following structure:
 - From `<matplotlib>`: `pyplot`. 
 - From `<statsmodels>`: `robust`. 
 
-1)2) Parameters
+1\.2\. Parameters
 ---------------
 - `eta`: float. Sparsity parameter in \[0,1). Note that `eta=0` returns the non-sparse, yet robust, partial robust M-regression (PRM) \[2\]. 
 - `n_components`: int > 1. Note that if applied on data, `n_components` shall take a value <= min(x_data.shape)
@@ -81,7 +81,7 @@ The main SPRM implementation yields a class with the following structure:
             will be printed in verbose mode
 - `copy` (def `True`): boolean, whether to create deep copy of the data in the calculation process 
 
-1)3) Attributes
+1\.3\. Attributes
 ---------------
 -  `x_weights_`: X block PLS weighting vectors (usually denoted W)
 -  `x_loadings_`: X block PLS loading vectors (usually denoted P)
@@ -106,7 +106,7 @@ The main SPRM implementation yields a class with the following structure:
 -  `y_sca_`: y scale estimate
 -  `non_zero_scale_vars_`: indicator vector of variables in X with nonzero scale
 
-1)4) Methods
+1\.4\. Methods
 ------------
 - `fit(X,y)`: fit model 
 - `predict(X)`: make predictions based on fit 
@@ -116,7 +116,7 @@ The main SPRM implementation yields a class with the following structure:
 - `setattr(**kwargs)`: set individual attribute of sprm object 
 - `valscore(X,y,scoring)`: option to use weighted scoring function in cross-validation if scoring=weighted 
 
-1)5) Ancillary functions 
+1\.5\. Ancillary functions 
 ------------------------
 - `snipls` (class): sparse NIPALS regression (first described in: \[3\]) 
 - `Hampel`: Hampel weight function 
@@ -128,7 +128,7 @@ The main SPRM implementation yields a class with the following structure:
 - `sprm_plot_cv` (class): plotting SPRM cross-validation results
         
         
-2) The Robust M (RM) estimator
+2\. The Robust M (RM) estimator
 ==============================
 
 RM has been implemented to be consistent with SPRM. It takes the same arguments, except for `eta`, `n_components` and `columns`, 
@@ -137,25 +137,25 @@ outputs. Therefore, dimension reduction outputs like `x_scores_`, `x_loadings_`,
 [cellwise robust](https://github.com/SebastiaanHoppner/CRM) version of RM has recently been introduced. 
         
         
-3) The Sparse NIPALS (SNIPLS) estimator
+3\. The Sparse NIPALS (SNIPLS) estimator
 =======================================
 
 SNIPLS is the non-robust sparse univariate PLS algorithm \[3\]. SNIPLS has been implemented to be consistent with SPRM. It takes the same arguments, except for `'fun'` and `'probp1'` through `'probp3'`, since these are robustness parameters. For the same reasons, the outputs are limited to sparse dimension reduction and regression outputs. Robustness related outputs like `x_caseweights_` cannot be provided.
         
  
-4) Plotting functionality
+4\. Plotting functionality
 =========================
 
 The file `sprm_plot.py` contains a set of plot functions based on Matplotlib. The class sprm_plot contains plots for sprm objects, wheras the class sprm_plot_cv contains a plot for cross-validation. 
 
-4)1) Dependencies
+4\.1\. Dependencies
 -----------------
 - `pandas`
 - `numpy`
 - `matplotlib.pyplot`
 - for plotting cross-validation results: `sklearn.model_selection.GridSearchCV`
 
-4)2) Paramaters
+4\.2\. Paramaters
 ---------------
 - `res_sprm`, sprm. An sprm class object that has been fit.  
 - `colors`, list of str entries. Only mandatory input. Elements determine colors as: 
@@ -172,18 +172,18 @@ The file `sprm_plot.py` contains a set of plot functions based on Matplotlib. Th
     - \[1\]: moderate outliers 
     - \[2\]: harsh outliers 
     
-4)3) Methods
+4\.3\. Methods
 ------------
 - `plot_coeffs(entity="coef_",truncation=0,columns=[],title=[])`: Plot regression coefficients, loadings, etc. with the option only to plot the x% smallest and largets coefficients (truncation) 
 - `plot_yyp(ytruev=[],Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False)`: Plot y vs y predicted. 
 - `plot_projections(Xn=[],label=[],components = [0,1],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False)`: Plot score space. 
 - `plot_caseweights(Xn=[],label=[],names=[],namesv=[],title=[],legend_pos='lower right',onlyval=False,mode='overall')`: Plot caseweights, with the option to plot `'x'`, `'y'` or `'overall'` case weights for cases used to train the model. For new cases, only `'x'` weights can be plotted. 
 
-4)4) Remark
+4\.4\. Remark
 -----------
 The latter 3 methods will work both for cases that the models has been trained with (no additional input) or new cases (requires Xn and in case of plot_ypp, ytruev), with the option to plot only the latter (option onlyval = True). All three functions have the option to plot case names if supplied as list.       
 
-4)5) Ancillary classes
+4\.5\. Ancillary classes
 ---------------------- 
 - `sprm_plot_cv` has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
 
