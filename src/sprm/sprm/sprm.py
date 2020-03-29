@@ -56,7 +56,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                  (e.g. 0.975, only relevant if fun='Hampel')
     probp3: float, probability cutoff for start of outlier omission 
                  (e.g. 0.999, only relevant if fun='Hampel')
-    centre: str, type of centring (`'mean'`, `'median'` or `'l1median'`, 
+    centre: str, type of centring (`'mean'`, `'median'`, `'l1median'`, or `'kstepLTS'`, 
             the latter recommended statistically, if too slow, switch to `'median'`)
     scale: str, type of scaling ('std','mad' [recommended] or 'None')
     verbose: boolean, specifying verbose mode

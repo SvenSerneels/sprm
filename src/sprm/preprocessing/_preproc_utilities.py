@@ -9,6 +9,7 @@ Set of help functions for robust centring and scaling
 """
 
 import numpy as np
+import pandas as ps
 import scipy.stats as sps
 import scipy.optimize as spo
 from statsmodels import robust as srs
@@ -39,8 +40,11 @@ def _check_trimming(t):
     
 def _check_input(X): 
     
-    if(type(X) == np.ndarray): 
+    if(type(X) in (np.ndarray,ps.core.frame.DataFrame,ps.core.series.Series)): 
         X = np.matrix(X)
+        
+    if (X.dtype == np.dtype('O')):
+        X = X.astype('float64')
     
     n,p = X.shape 
     
