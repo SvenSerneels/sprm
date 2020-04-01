@@ -207,6 +207,48 @@ def kstepLTS(X, maxit = 5, tol = 1e-10,**kwargs):
         m1 = copy.deepcopy(m2)
     return(m2)
     
+def scaleTau2(x0, c1 = 4.5, c2 = 3, consistency = True, **kwargs):   
+    
+    """
+    Tau estimator of scale 
+    Inputs:
+        x0: array or matrix, data 
+        c1: consistency factor for initial estimate 
+        c2: consistency factor for final estimate 
+        consistency: str or bool, 
+            False, True, or "finiteSample" 
+    Output:
+        the scale estimate
+    """
+    
+    x = copy.deepcopy(x0)
+    n,p = x.shape
+    medx = np.median(x,axis=0)
+    xc = abs(x - medx)
+    sigma0 = np.median(xc,axis=0) 
+    if (c1 > 0):
+        xc /= (sigma0 * c1)
+        w = 1 - np.square(xc)
+        w = np.square((abs(w) + w)/2)
+        mu = np.sum(np.multiply(x,w))/np.sum(w)
+    else: 
+        mu = medx
+    x -= mu
+    x /= sigma0
+    rho = np.square(x)
+    rho[np.where(rho > c2**2)[0]] = c2**2
+    if consistency:
+        Erho = lambda b: 2 * ((1 - b**2) * sps.norm.cdf(b) - b * sps.norm.pdf(b) + 
+            b**2) - 1
+        Es2 = lambda c2: Erho(c2 * sps.norm.ppf(3/4))
+        if (consistency == "finiteSample"):
+            nEs2 = (n - 2) * Es2(c2)
+        else: 
+            nEs2 = n  * Es2(c2)
+    else: 
+        nEs2 = n
+    return(np.array(sigma0 * np.sqrt(np.sum(rho)/nEs2)).reshape((p,)))
+    
 def scale_data(X,m,s):
         
         """

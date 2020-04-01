@@ -58,7 +58,7 @@ class sprm(_BaseComposition,BaseEstimator,TransformerMixin,RegressorMixin):
                  (e.g. 0.999, only relevant if fun='Hampel')
     centre: str, type of centring (`'mean'`, `'median'`, `'l1median'`, or `'kstepLTS'`, 
             the latter recommended statistically, if too slow, switch to `'median'`)
-    scale: str, type of scaling ('std','mad' [recommended] or 'None')
+    scale: str, type of scaling ('std','mad', 'scaleTau2' [recommended] or 'None')
     verbose: boolean, specifying verbose mode
     maxit: int, maximal number of iterations in M algorithm
     tol: float, tolerance for convergence in M algorithm 

@@ -58,7 +58,10 @@ Ancillary functions in _preproc_utilities.py:
     `maxit`: int, number of iterations to compute maximally 
     `tol`: float, tolerance for convergence
 `std(X,trimming)`: Column-wise std.
-`mad(X,c)`: Column-wise median absolute deviation, with consistency factor c. 
+`mad(X,c)`: Column-wise median absolute deviation, with consistency factor c.
+`scaleTau2(x0, c1 = 4.5, c2 = 3, consistency = True)`: Tau estimator of scale 
+    with consistency parameters c1 and c2 and option for consistency correction
+    (True, False or 'finiteSample')
 
              
 Remarks

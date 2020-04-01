@@ -64,7 +64,7 @@ The main SPRM implementation yields a class with the following structure:
 - `probp2`: float, probability cutoff for start of steep downweighting (e.g. 0.975, only relevant if `fun='Hampel'`)
 - `probp3`: float, probability cutoff for start of outlier omission (e.g. 0.999, only relevant if `fun='Hampel'`)
 - `centring`: str, type of centring (`'mean'`, `'median'`,`'l1median'` or `'kstepLTS'`)
-- `scaling`: str, type of scaling (`'std'`,`'mad'`, the latter recommended, or `'None'`)
+- `scaling`: str, type of scaling (`'std'`,`'mad'`, `'scaleTau2'`, the latter recommended, or `'None'`)
 - `verbose`: boolean, specifying verbose mode
 - `maxit`: int, maximal number of iterations in M algorithm
 - `tol`: float, tolerance for convergence in M algorithm 
