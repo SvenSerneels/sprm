@@ -57,11 +57,4 @@ References
         
 [Release Notes](https://github.com/SvenSerneels/sprm/blob/master/SPRM_Release_Notes.md) can be checked out in the repository.  
 
-Work to do
-----------
-- optimize alignment to `sklearn`
-- optimize for speed 
-- extend to multivariate responses (open research topic !)
-- extend backend to GPU compatibility
-- write robust `GridSearchCV` 
-- suggestions and contributions always welcome!
+[A list of possible topics for further development](https://github.com/SvenSerneels/sprm/blob/master/SPRM_Future_Dev.md)
