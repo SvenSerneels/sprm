@@ -143,4 +143,12 @@ The latter 3 methods will work both for cases that the models has been trained w
 
 4\.5\. Ancillary classes
 ---------------------- 
-- `sprm_plot_cv` has method eta_ncomp_contour(title) to plot sklearn GridSearchCV results 
+- `sprm_plot_cv` has method `eta_ncomp_contour(title)` to plot sklearn GridSearchCV results 
+
+
+References
+==========
+1. [Sparse partial robust M regression](https://www.sciencedirect.com/science/article/abs/pii/S0169743915002440), Irene Hoffmann, Sven Serneels, Peter Filzmoser, Christophe Croux, Chemometrics and Intelligent Laboratory Systems, 149 (2015), 50-59.
+2. [Partial robust M regression](https://doi.org/10.1016/j.chemolab.2005.04.007), Sven Serneels, Christophe Croux, Peter Filzmoser, Pierre J. Van Espen, Chemometrics and Intelligent Laboratory Systems, 79 (2005), 55-64.
+3. [Sparse and robust PLS for binary classification](https://onlinelibrary.wiley.com/doi/abs/10.1002/cem.2775), I. Hoffmann, P. Filzmoser, S. Serneels, K. Varmuza, Journal of Chemometrics, 30 (2016), 153-162.
+        
