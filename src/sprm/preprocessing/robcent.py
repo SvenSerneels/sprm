@@ -39,6 +39,9 @@ Methods
     `fit_transform(X)`: both of the above
     `predict(X)`: Same as `transform`, but does not store the result (different
         from sklearn, can be convenient for some ML tools) 
+    `inverse_transform()`: transform the scaled data frame back to the original
+        scale. When no input provided, will use the scaled `datas_` in the 
+        object. 
             
 Arguments for methods: 
     `X`: array-like, n x p, the data.
@@ -184,6 +187,20 @@ class VersatileScaler(_BaseComposition,TransformerMixin,BaseEstimator):
         self.fit(X)
         self.transform(X)
         return(self.datas_)
+        
+    def inverse_transform(self,Xs=None):
+        
+        """
+        Transform scaled data back to their original scale  
+        """
+        
+        check_is_fitted(self,['center_','scale_'])
+        if Xs is not None:
+            Xs = _check_input(Xs)
+        else:
+            Xs = self.datas_
+        return(np.multiply(Xs,self.scale_) + self.center_)
+        
         
 # For backwards compatibility
 robcent = VersatileScaler

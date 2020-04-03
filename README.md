@@ -57,4 +57,4 @@ References
         
 [Release Notes](https://github.com/SvenSerneels/sprm/blob/master/SPRM_Release_Notes.md) can be checked out in the repository.  
 
-[A list of possible topics for further development](https://github.com/SvenSerneels/sprm/blob/master/SPRM_Future_Dev.md)
+[A list of possible topics for further development](https://github.com/SvenSerneels/sprm/blob/master/SPRM_Future_Dev.md) is provided as well. Additions and comments are welcome!

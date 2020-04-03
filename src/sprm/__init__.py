@@ -10,14 +10,16 @@ __name__ = "sprm"
 __author__ = "Sven Serneels"
 __license__ = "MIT"
 __version__ = "0.7.0"
-__date__ = "2020-03-31"
+__date__ = "2020-04-03"
 
 from .preprocessing.robcent import VersatileScaler, versatile_scale
 from .preprocessing.gsspp import GenSpatialSignPrePprocessor, gen_ss_pp, gen_ss_covmat
 from .sprm.sprm import sprm
 from .sprm.snipls import snipls
 from .sprm.rm import rm
-from .sprm.sprm_plot import sprm_plot,sprm_plot_cv
+from .cross_validation._cv_support_functions import robust_loss
+from .plot.sprm_plot import sprm_plot,sprm_plot_cv
+
 
 
 

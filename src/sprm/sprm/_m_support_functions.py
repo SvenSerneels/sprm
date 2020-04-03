@@ -13,10 +13,10 @@ import numpy as np
 class MyException(Exception):
         pass
 
-def Fair(x,probct):
+def Fair(x,probct,*args):
     return((1/(1 + abs(x/(probct * 2)))**2)) 
          
-def Huber(x,probct):
+def Huber(x,probct,*args):
     x[np.where(x <= probct)[0]] = 1
     x[np.where(x > probct)] = probct/abs(x[np.where(x > probct)])
     return(x)
@@ -42,3 +42,7 @@ def brokenstick(n_components):
     q = np.matmul(q,1/r)
     q /= n_components
     return q
+
+
+
+    
