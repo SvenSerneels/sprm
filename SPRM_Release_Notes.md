@@ -57,5 +57,10 @@ Version 0.6
 Preprocessing files moved into separate folder. More preprocessing options. 
 Examples moved into Jupyter notebook in separate examples section.
 
+Version 0.7
+-----------
+Included Tau estimator of scale and robust cross-validation loss. Reorganized the package. 
+0.7.1: The end, `sprm` migrates into `direpack`.  
+
  
 
