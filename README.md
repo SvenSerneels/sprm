@@ -2,9 +2,10 @@ Adieu, `sprm` package!
 ======================
 The `sprm` package has been sunset and will no longer be updated. 
 Its contents have migrated into the `direpack` package: 
-- [PyPI:](https://pypi.org/project/direpack/) 
-- [GitHub:](https://github.com/SvenSerneels/direpack)
-`sprm` will still stay live for a while for backwards compatibility.
+- [PyPI](https://pypi.org/project/direpack/) 
+- [GitHub](https://github.com/SvenSerneels/direpack)
+
+The `sprm` package in this final version will still stay live for a while for backwards compatibility.
 
 How to install
 --------------
